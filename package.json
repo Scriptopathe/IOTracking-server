@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@types/e cxpress": "^4.0.33",
+    "concurrently": "^3.1.0",
+    "express": "^4.14.0",
+    "http": "0.0.0"
+  },
+  "scripts": {
+    "start": "tsc && concurrently \"node server.js\""
+  }
+}
