@@ -1,5 +1,6 @@
 typings/
 node_modules/
+db/
 .vscode/
 
 **.js
