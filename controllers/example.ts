@@ -70,13 +70,9 @@ router.get('/dummy/delete/:hwid', function(req, res, next) {
 router.get('/dummy/list', function(req, res, next) {
   let db : database.ExampleModel = new database.ExampleModel(req["db"])
   
-  db.listDevices().then(function(docs : any) : any {
-
-    for(var i in docs) {
-      let doc = docs[i]
-      res.write("[hwid = " + doc["hwid"] + ", name = " + doc["name"] + "]\n")
-    }
-    
+  db.listDevices().each(function(doc : any) : any {
+    res.write("[_id = " + doc["_id"] + ", hwid = " + doc["hwid"] + ", name = " + doc["name"] + "]\n")
+  }).then(function() {
     writeSuccess(res)
     next()
   })

@@ -1,7 +1,10 @@
 import * as monk from "monk"
+import * as modelHelpers from "../helpers/model"
 
-export interface promise {
-    then(doc : any) : promise
+export interface Example {
+    hwid : string
+    name : string
+    _id : string
 }
 
 export class ExampleModel {
@@ -23,18 +26,18 @@ export class ExampleModel {
      * Inserts a device with the given hwid and name into the database.
      * @returns A promise.
      */
-    insertDevice(hwid : string, name : string) : any {
+    insertDevice(hwid : string, name : string) : modelHelpers.ModelPromise<Example> {
         var col : monk.Collection = this.db.get("dummy")
-        return col.insert({ hwid: hwid, name: name })
+        return modelHelpers.cast(col.insert({ hwid: hwid, name: name }))
     }
 
     /**
      * Deletes the device with the given hwid from the database.
      * @returns A promise.
      */
-    deleteDevice(hwid : string) : any {
+    deleteDevice(hwid : string) : modelHelpers.ModelPromise<Example> {
         var col : monk.Collection = this.db.get("dummy")
-        return col.remove({ hwid: hwid })
+        return modelHelpers.cast(col.remove({ hwid: hwid }))
     }
 
     /**
@@ -42,8 +45,8 @@ export class ExampleModel {
      * @returns A promise taking as argument a document with the listDevices
      * in the form of { hwid : "XXXX", name : "XXXX" }
      */
-    listDevices() : any {
+    listDevices() : modelHelpers.FindPromise<Example> {
         var col : monk.Collection = this.db.get("dummy")
-        return col.find({})
+        return modelHelpers.castFind(col.find({}))
     }
 }
