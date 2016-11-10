@@ -2,6 +2,7 @@
 {
     "files.exclude": {
         "**/*.js": {"when": "$(basename).ts"},
-        "**/*.js.map" : true
+        "**/*.js.map" : true,
+        "db/" : true
     }
 }
