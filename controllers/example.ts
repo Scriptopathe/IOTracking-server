@@ -43,7 +43,7 @@ router.get('/pid/:id', function(req, res, next) {
  * dummy api
  * -------------------------------------------------------------------*/
 router.get('/dummy/create', function(req, res, next) {
-  let db : database.ExampleModel = new database.ExampleModel(req["db"])
+  let db : database.Example = new database.Example(req["db"])
   db.createDummy().then(() => {})
   writeSuccess(res)
   next()
@@ -52,7 +52,7 @@ router.get('/dummy/create', function(req, res, next) {
 router.get('/dummy/insert/:hwid/:name', function(req, res, next) {
   let hwid : string = req.params.hwid
   let name : string = req.params.name
-  let db : database.ExampleModel = new database.ExampleModel(req["db"])
+  let db : database.Example = new database.Example(req["db"])
   db.insertDevice(hwid, name).then(() => {})
   writeSuccess(res)
   next()
@@ -60,7 +60,7 @@ router.get('/dummy/insert/:hwid/:name', function(req, res, next) {
 
 router.get('/dummy/delete/:hwid', function(req, res, next) {
   let hwid : string = req.params.hwid
-  let db : database.ExampleModel = new database.ExampleModel(req["db"])
+  let db : database.Example = new database.Example(req["db"])
   
   writeSuccess(res)
   db.deleteDevice(hwid).then(() => {})
@@ -68,7 +68,7 @@ router.get('/dummy/delete/:hwid', function(req, res, next) {
 })
 
 router.get('/dummy/list', function(req, res, next) {
-  let db : database.ExampleModel = new database.ExampleModel(req["db"])
+  let db : database.Example = new database.Example(req["db"])
   
   db.listDevices().each(function(doc : any) : any {
     res.write("[_id = " + doc["_id"] + ", hwid = " + doc["hwid"] + ", name = " + doc["name"] + "]\n")

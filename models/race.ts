@@ -8,7 +8,7 @@ export class ConcurrentModel { }
 /**
  * Interface containing all the fields of a race object.
  */
-export interface Race {
+export interface RaceModel {
     date : Date
     location : string
     concurrents : ConcurrentModel[]
@@ -17,9 +17,9 @@ export interface Race {
 }
 
 /**
- * Database model implementation of the Race object.
+ * Database model implementation of the RaceModel object.
  */
-export class RaceModel extends ModelBase<Race> implements Race {
+export class Race extends ModelBase<RaceModel> implements RaceModel {
     private static dbName : string = "races"
 
     public date : Date
@@ -28,23 +28,23 @@ export class RaceModel extends ModelBase<Race> implements Race {
     public podium : Array<ConcurrentModel>
     public live : boolean
 
-    public constructor(private db : monk.Monk, race? : Race) 
+    public constructor(private db : monk.Monk, race? : RaceModel) 
     {
-        super(db.get(RaceModel.dbName), ["date", "location", "concurrents", "podium", "live"], race)
+        super(db.get(Race.dbName), ["date", "location", "concurrents", "podium", "live"], race)
     }
 
     /** 
-     * Loads a model RaceModel from the database.
+     * Loads a model Race from the database.
      * @param needle used to query the database. See mongo db documentation for details.
      * @param db database instance to use to load the model.
      * @param done callback executed once the loading has been performed.
      */
-    public static load(db : monk.Monk, needle : any, done : (x : RaceModel)  => void) : void {
-        var col : monk.Collection = db.get(RaceModel.dbName)
-        this.findAndWrap<Race, RaceModel>(
+    public static findOne(db : monk.Monk, needle : any, done : (x : Race)  => void) : void {
+        var col : monk.Collection = db.get(Race.dbName)
+        this.findAndWrap<RaceModel, Race>(
             col, 
             needle,
-            (col, model) => { return new RaceModel(db, model) },
+            (col, model) => { return new Race(db, model) },
             (items => { done(items[0]) })
         )
     }
@@ -59,13 +59,13 @@ export class RaceModel extends ModelBase<Race> implements Race {
     public static find(
             db : monk.Monk,
             needle : any, 
-            done : (obj : RaceModel[])  => void) : void
+            done : (obj : Race[])  => void) : void
     {
-        let col  : monk.Collection = db.get(RaceModel.dbName)
-        this.findAndWrap<Race, RaceModel>(
+        let col  : monk.Collection = db.get(Race.dbName)
+        this.findAndWrap<RaceModel, Race>(
             col, 
             needle, 
-            (col, model) => { return new RaceModel(db, model) },
+            (col, model) => { return new Race(db, model) },
             done
         )
     }
@@ -74,7 +74,7 @@ export class RaceModel extends ModelBase<Race> implements Race {
      * Creates a dummy database.
      */
     public static createDummy(db : monk.Monk) : void {
-        var col : monk.Collection = db.get(RaceModel.dbName);
+        var col : monk.Collection = db.get(Race.dbName);
         col.insert([
             {
                 date: new Date(),

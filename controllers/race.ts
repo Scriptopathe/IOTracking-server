@@ -1,6 +1,6 @@
 import * as express from "express"
 import * as monk from "monk"
-import { RaceModel } from "../models/race"
+import { Race } from "../models/race"
 
 let router = express.Router()
 
@@ -14,13 +14,13 @@ let writeSuccess = function(res : express.Response) : void{
  * dummy api
  * -------------------------------------------------------------------*/
 router.get('/create', function(req, res, next) {
-  RaceModel.createDummy(req["db"])
+  Race.createDummy(req["db"])
   writeSuccess(res)
   next()
 })
 
 router.get('/insert/:live/:location', function(req, res, next) {
-  let race : RaceModel = new RaceModel(req["db"], {
+  let race : Race = new Race(req["db"], {
       concurrents : [],
       date : new Date(),
       live : Boolean(req.params["live"]),
@@ -34,7 +34,7 @@ router.get('/insert/:live/:location', function(req, res, next) {
 })
 
 router.get('/list', function(req, res, next) {
-    RaceModel.find(req["db"], {}, (objs => {
+    Race.find(req["db"], {}, (objs => {
         for(let obj of objs) {
             res.write("Here it is : " + obj.stringify() + "\n")
         }

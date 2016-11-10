@@ -44,7 +44,7 @@ router.get('/pid/:id', function(req, res, next) {
  * user API
  * -------------------------------------------------------------------*/
 router.get('/user/create', function(req, res, next) {
-  let db : database.UserModel = new database.UserModel(req["db"])
+  let db : database.User = new database.User(req["db"])
   db.createDummy().then(() => {})
   writeSuccess(res)
   next()
@@ -53,7 +53,7 @@ router.get('/user/create', function(req, res, next) {
 router.get('/user/insert/:username/:role', function(req, res, next) {
   let username : string = req.params.username
   let role : Role = req.params.role
-  let db : database.UserModel = new database.UserModel(req["db"])
+  let db : database.User = new database.User(req["db"])
   db.insertUser(username, role).then(() => {})
   writeSuccess(res)
   next()
@@ -61,7 +61,7 @@ router.get('/user/insert/:username/:role', function(req, res, next) {
 
 router.get('/user/delete/:username', function(req, res, next) {
   let username : string = req.params.username
-  let db : database.UserModel = new database.UserModel(req["db"])
+  let db : database.User = new database.User(req["db"])
   
   writeSuccess(res)
   db.deleteUser(username).then(() => {})
@@ -69,7 +69,7 @@ router.get('/user/delete/:username', function(req, res, next) {
 })
 
 router.get('/user/list', function(req, res, next) {
-  let db : database.UserModel = new database.UserModel(req["db"])
+  let db : database.User = new database.User(req["db"])
   
   db.listUser().then(function(docs : any) : any {
 

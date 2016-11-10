@@ -1,14 +1,14 @@
 import * as monk from "monk"
-import * as promise from "../models/promise"
+import * as promise from "../helpers/model"
 
 export enum Role { staff, member };
 
-export interface User {
+export interface UserModel {
     username : string
     role : Role;
 } 
 
-export class UserModel implements User {
+export class User implements UserModel {
     
     username : string;
     role : Role;
@@ -23,9 +23,9 @@ export class UserModel implements User {
         })
     }
 
-    static load(db : monk.Monk, needle : any) : promise.ModelPromise<User> {
+    static load(db : monk.Monk, needle : any) : promise.ModelPromise<UserModel> {
         var col : monk.Collection = db.get("user");
-        return <promise.ModelPromise<User>> <any> col.find(needle)
+        return <promise.ModelPromise<UserModel>> <any> col.find(needle)
     }
 
     createDummy() : any {

@@ -1,13 +1,13 @@
 import * as monk from "monk"
 import * as modelHelpers from "../helpers/model"
 
-export interface Example {
+export interface ExampleModel {
     hwid : string
     name : string
     _id : string
 }
 
-export class ExampleModel {
+export class Example {
     constructor(private db : monk.Monk) { }
 
     /**
@@ -26,7 +26,7 @@ export class ExampleModel {
      * Inserts a device with the given hwid and name into the database.
      * @returns A promise.
      */
-    insertDevice(hwid : string, name : string) : modelHelpers.ModelPromise<Example> {
+    insertDevice(hwid : string, name : string) : modelHelpers.ModelPromise<ExampleModel> {
         var col : monk.Collection = this.db.get("dummy")
         return modelHelpers.cast(col.insert({ hwid: hwid, name: name }))
     }
@@ -35,7 +35,7 @@ export class ExampleModel {
      * Deletes the device with the given hwid from the database.
      * @returns A promise.
      */
-    deleteDevice(hwid : string) : modelHelpers.ModelPromise<Example> {
+    deleteDevice(hwid : string) : modelHelpers.ModelPromise<ExampleModel> {
         var col : monk.Collection = this.db.get("dummy")
         return modelHelpers.cast(col.remove({ hwid: hwid }))
     }
@@ -45,7 +45,7 @@ export class ExampleModel {
      * @returns A promise taking as argument a document with the listDevices
      * in the form of { hwid : "XXXX", name : "XXXX" }
      */
-    listDevices() : modelHelpers.FindPromise<Example> {
+    listDevices() : modelHelpers.FindPromise<ExampleModel> {
         var col : monk.Collection = this.db.get("dummy")
         return modelHelpers.castFind(col.find({}))
     }
