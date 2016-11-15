@@ -32,6 +32,16 @@ export abstract class ModelBase<Model>
             this.col.update({ _id : this["_id"] }, data)
     }
 
+    /**
+     * Deletes the current object from the database.
+     */
+    public delete() : void
+    {
+        if(this._id == undefined)
+            throw new Error("This instance does not exist in the database. Can't remove it.")
+
+        this.col.removeById(this._id)
+    }
     
     /**
      * Performs a find operation on the database. 
