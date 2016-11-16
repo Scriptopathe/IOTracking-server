@@ -1,8 +1,7 @@
 import * as express from "express"
 import * as monk from "monk"
 import * as database from "../models/user"
-import {User} from "../models/user"
-import {Role} from "../models/user"
+import {Device} from "../models/device"
 
 let router = express.Router()
 
@@ -13,33 +12,32 @@ let writeSuccess = function(res : express.Response) : void{
 }
 
 /* ---------------------------------------------------------------------
- * user API
+ * device API
  * -------------------------------------------------------------------*/
 router.get('/create', function(req, res, next) {
-  User.createDummy(req["db"]);
+  Device.createDummy(req["db"]);
   writeSuccess(res)
   next()
 })
 
-router.get('/insert/:username/:role', function(req, res, next) {
-  let role : string = req["role"]
-  let username : string = req["username"]
-  let tempRole : Role = User.determineRole(role);
+router.get('/insert/:id/:name', function(req, res, next) {
+  let id : number = req["id"]
+  let name : string = req["name"]
 
-  let user : User = new User(req["db"], {
-      username : username,
-      role : tempRole
+  let device : Device = new Device(req["db"], {
+      id : id,
+      name : name
   })
   
-  user.save()
+  device.save()
   writeSuccess(res)
   next()
 })
 
 /*
-router.get('/delete/:username', function(req, res, next) {
-    let username : string = req["username"]
-    User.findOne(req["db"], {username}, (objs => {
+router.get('/delete/:name', function(req, res, next) {
+    let name : string = req["name"]
+    User.findOne(req["db"], {name}, (objs => {
         objs.delete()
       }))
   next()
@@ -47,7 +45,7 @@ router.get('/delete/:username', function(req, res, next) {
 */
 
 router.get('/list', function(req, res, next) {
-    User.find(req["db"], {}, (objs => {
+    Device.find(req["db"], {}, (objs => {
         for(let obj of objs) {
             res.write(obj.stringify() + "\n") 
         }
