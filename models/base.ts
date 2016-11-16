@@ -9,11 +9,21 @@ export abstract class ModelBase<Model>
      * Initialises the models from a collection and a set of properties.
      * If a model is given, its content is copied to this instance.
      */
-    protected constructor(protected col : monk.Collection, private properties : string[], model? : Model) 
+    protected constructor(protected col : monk.Collection, private _properties : string[], model? : Model) 
     {
         if(model != undefined) {
-            modelHelpers.copy(this, model, properties)
+            if(model["_id"] != undefined)
+                this._id = model["_id"]
+            
+            modelHelpers.copy(this, model, _properties)
         }
+    }
+
+    /**
+     * @return The properties contained in the model.
+     */
+    public get properties() : string[] {
+        return this._properties
     }
 
     /** 
@@ -51,25 +61,37 @@ export abstract class ModelBase<Model>
      *        in the database.
      * @param done callback to be executed when after the completion of the find operation. 
      *        takes an array of instance of the model wrapper as arguments.
+     * @param err callback executed when an error occurs.
      */
     public static findAndWrap<Model, ModelWrapper>(
             col : monk.Collection,
             needle : any, 
             allocator: (col : monk.Collection, model : Model) => ModelWrapper,
-            done : (obj : ModelWrapper[])  => void) : void
+            done : (obj : ModelWrapper[])  => void,
+            err? : (error : Error) => void
+            ) : void
     {
-        var prom : modelHelpers.FindPromise<Model> = modelHelpers.castFind<Model>(col.find(needle))
-        let docs : ModelWrapper[] = []
+        try {
+            var prom : modelHelpers.FindPromise<Model> = modelHelpers.castFind<Model>(col.find(needle))
+            let docs : ModelWrapper[] = []
         
-        prom.each(function(doc : Model) {
-            docs.push(allocator(col, doc))
-        }).then(function() {
-            done(docs)
-        })
+            prom.each(function(doc : Model) {
+                docs.push(allocator(col, doc))
+            }).then(function() {
+                done(docs)
+            })
+            
+        } catch (error) {
+            if(err != undefined)
+                err(error)
+            else
+                throw error   
+        }
     }
 
     public stringify() : string {
         let data = {}
+        modelHelpers.copy(data, this, ["_id"])
         modelHelpers.copy(data, this, this.properties)
         return JSON.stringify(data)
     }

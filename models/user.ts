@@ -9,6 +9,7 @@ export interface UserModel {
 } 
 
 export class User implements UserModel {
+    public static collectionName : string = "user"
     
     username : string;
     role : Role;

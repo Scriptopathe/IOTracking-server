@@ -20,7 +20,8 @@ export interface RaceModel {
  * Database model implementation of the RaceModel object.
  */
 export class Race extends ModelBase<RaceModel> implements RaceModel {
-    private static dbName : string = "races"
+    public static collectionName : string = "races"
+    
 
     public date : Date
     public location : string
@@ -30,7 +31,7 @@ export class Race extends ModelBase<RaceModel> implements RaceModel {
 
     public constructor(private db : monk.Monk, race? : RaceModel) 
     {
-        super(db.get(Race.dbName), ["date", "location", "concurrents", "podium", "live"], race)
+        super(db.get(Race.collectionName), ["date", "location", "concurrents", "podium", "live"], race)
     }
 
     /** 
@@ -40,7 +41,7 @@ export class Race extends ModelBase<RaceModel> implements RaceModel {
      * @param done callback executed once the loading has been performed.
      */
     public static findOne(db : monk.Monk, needle : any, done : (x : Race)  => void) : void {
-        var col : monk.Collection = db.get(Race.dbName)
+        var col : monk.Collection = db.get(Race.collectionName)
         this.findAndWrap<RaceModel, Race>(
             col, 
             needle,
@@ -61,7 +62,7 @@ export class Race extends ModelBase<RaceModel> implements RaceModel {
             needle : any, 
             done : (obj : Race[])  => void) : void
     {
-        let col  : monk.Collection = db.get(Race.dbName)
+        let col  : monk.Collection = db.get(Race.collectionName)
         this.findAndWrap<RaceModel, Race>(
             col, 
             needle, 
@@ -74,7 +75,7 @@ export class Race extends ModelBase<RaceModel> implements RaceModel {
      * Creates a dummy database.
      */
     public static createDummy(db : monk.Monk) : void {
-        var col : monk.Collection = db.get(Race.dbName);
+        var col : monk.Collection = db.get(Race.collectionName);
         col.insert([
             {
                 date: new Date(),

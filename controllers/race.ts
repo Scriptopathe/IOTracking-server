@@ -1,6 +1,8 @@
 import * as express from "express"
 import * as monk from "monk"
-import { Race } from "../models/race"
+import * as restmaker from "../helpers/restify"
+
+import { Race, RaceModel } from "../models/race"
 
 let router = express.Router()
 
@@ -43,5 +45,8 @@ router.get('/list', function(req, res, next) {
         next()
     }))
 })
+
+
+router.use("/api", restmaker.restify(Race))
 
 export { router }
