@@ -4,6 +4,7 @@ import * as exampleCtrl from "./controllers/example"
 import * as raceCtrl from "./controllers/race"
 import * as middleware404 from "./middlewares/error-404"
 import * as middlewareDB from './middlewares/database'
+import * as bodyparser from "body-parser"
 
 export class Server {
   public app: express.Application;
@@ -16,6 +17,7 @@ export class Server {
    * Route and middleware configuration is performed here.
    */
   public configure() : void {
+      this.app.use(bodyparser.text())
       this.app.use(middlewareDB.dbMiddleware)
       this.app.use('/example', exampleCtrl.router)
       this.app.use('/races', raceCtrl.router)
