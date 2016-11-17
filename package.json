@@ -14,6 +14,6 @@
     "q": "^1.4.1"
   },
   "scripts": {
-    "start": "tsc && concurrently \"node server.js\""
+    "start": "tsc -p tsconfig.json && concurrently \"node server.js\""
   }
 }
