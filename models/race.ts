@@ -1,7 +1,10 @@
 import * as monk from "monk"
 import * as modelHelpers from "../helpers/model"
+import * as properties from "./schema/property"
 
-import { ModelBase } from "../models/base"
+import { ModelBase, Reference } from "../models/base"
+import { Property } from "./schema/property"
+import { Schema } from "./schema/schema"
 
 export class ConcurrentModel { }
 
@@ -11,27 +14,36 @@ export class ConcurrentModel { }
 export interface RaceModel {
     date : Date
     location : string
-    concurrents : ConcurrentModel[]
-    podium : ConcurrentModel[]
+    concurrents : Array<Reference<ConcurrentModel>>
+    podium : Array<Reference<ConcurrentModel>>
     live : boolean
+    lulz : number
 }
 
 /**
  * Database model implementation of the RaceModel object.
  */
-export class Race extends ModelBase<RaceModel> implements RaceModel {
+export class Race extends ModelBase<RaceModel> {
     public static collectionName : string = "races"
-    
+    public static schema : Schema = new Schema({
+        "date" : new properties.DateProperty(),
+        "location" : new properties.StringProperty(),
+        "concurrents" : new properties.ArrayProperty(new properties.ReferenceProperty()),
+        "podium" : new properties.ArrayProperty(new properties.ReferenceProperty()),
+        "live" : new properties.BoolProperty(),
+        "lulz" : new properties.TestProperty() // TESTING
+    })
 
     public date : Date
     public location : string
-    public concurrents : Array<ConcurrentModel>
-    public podium : Array<ConcurrentModel>
+    public concurrents : Array<Reference<ConcurrentModel>>
+    public podium : Array<Reference<ConcurrentModel>>
     public live : boolean
+    public lulz : number
 
     public constructor(private db : monk.Monk, race? : RaceModel) 
     {
-        super(db.get(Race.collectionName), ["date", "location", "concurrents", "podium", "live"], race)
+        super(db.get(Race.collectionName), Race.schema, race)
     }
 
     /** 
