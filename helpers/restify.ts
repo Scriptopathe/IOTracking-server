@@ -2,10 +2,13 @@ import * as modelbase from "../models/base"
 import * as express from "express"
 import * as monk from "monk"
 
+import { Schema } from "../models/schema/schema"
+
 export interface Restifiable
 {
     collectionName : string
     findAndWrap : typeof modelbase.ModelBase.findAndWrap
+    schema : Schema
 }
 
 /**
@@ -44,11 +47,19 @@ export function restify(Type : Restifiable)
                 return
             }
 
-            // TODO : wrapper function. 
-            newobj[prop] = x[prop]
+            newobj[prop] = newobj.schema.properties[prop].unwrap(x[prop])
+
+            if(newobj[prop] == undefined) {
+                res.statusCode = 400
+                res.statusMessage = "Property " + prop + " has incorrect value"
+                res.end()
+                return
+            }
         }
 
         newobj.save()
+        
+        res.statusCode = 201
         res.end()
     })
 
@@ -79,8 +90,14 @@ export function restify(Type : Restifiable)
                         return
                     }
 
-                    // TODO : wrapper function. 
-                    x[prop] = obj[prop]
+                    x[prop] = obj.schema.properties[prop].unwrap(x[prop])
+
+                    if(x[prop] == undefined) {
+                        res.statusCode = 400
+                        res.statusMessage = "Property " + prop + " has incorrect value"
+                        res.end()
+                        return
+                    }
                 }
 
                 x.save()
