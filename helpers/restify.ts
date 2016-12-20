@@ -114,15 +114,34 @@ export function restify(Type : Restifiable)
         res.end()
     })
 
+    r.get("/count", function(req, res, next) {
+        Type.findAndWrap(
+            req["db"].get(Type.collectionName), {},
+            (col : any, model : any) => new (<any> Type)(req["db"], model),
+            function(objs : any[]) {
+                res.write(String(objs.length))
+                res.end()
+            }
+        )
+    })
+
     r.get("/", function(req, res, next) {
+        let first = req.query["first"] == undefined ? 0 : Number(req.query["first"])
+        let last = req.query["last"] == undefined ? -1 : Number(req.query["last"])
         Type.findAndWrap(
             req["db"].get(Type.collectionName), {},
             (col : any, model : any) => new (<any> Type)(req["db"], model),
             function(objs : any[]) {
                 let strings : string[] = []
-                for(let obj of objs) {
-                    strings.push(JSON.parse(obj.stringify()))
+
+                if(last < 0) last = objs.length
+                first = Math.max(0, Math.min(objs.length, first)) 
+                last = Math.max(0, Math.min(objs.length, last)) 
+
+                for(let i = first; i < last; i++) {
+                    strings.push(JSON.parse(objs[i].stringify()))
                 }
+
                 res.write(JSON.stringify(strings))
                 res.end()
             }
