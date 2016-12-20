@@ -1,12 +1,10 @@
 import * as express from "express"
 import * as path from "path"
 import * as exampleCtrl from "./controllers/example"
-import * as raceCtrl from "./controllers/race"
-import * as userCtrl from "./controllers/user"
-import * as deviceCtrl from "./controllers/device"
 import * as middleware404 from "./middlewares/error-404"
 import * as middlewareDB from './middlewares/database'
 import * as bodyparser from "body-parser"
+import * as rawrestapi from "./controllers/raw-rest-api"
 
 export class Server {
   public app: express.Application;
@@ -22,9 +20,7 @@ export class Server {
       this.app.use(bodyparser.text())
       this.app.use(middlewareDB.dbMiddleware)
       this.app.use('/example', exampleCtrl.router)
-      this.app.use('/races', raceCtrl.router)
-      this.app.use('/user', userCtrl.router)
-      this.app.use('/device', deviceCtrl.router)
+      this.app.use('/api', rawrestapi.router)
       this.app.use(middleware404.router)
   }
 

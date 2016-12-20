@@ -1,15 +1,23 @@
 import * as monk from "monk"
 import * as promise from "../helpers/model"
+import * as properties from "./schema/property"
+import { Schema } from "./schema/schema"
 import { ModelBase } from "../models/base"
 
-export enum Role { staff, member, anonymous };
+export class Role {
+    public static staff = "staff"
+    public static member = "member"
+    public static anonymous = "anonymous"
+    public static ALL = [Role.staff, Role.member, Role.anonymous]
+}
  
 /**
  * Interface containing all the fields of a user object.
  */
 export interface UserModel {
     username : string
-    role : Role;
+    password : string
+    role : string;
 } 
 
 
@@ -18,13 +26,19 @@ export interface UserModel {
  */
 export class User extends ModelBase<UserModel> implements UserModel {
     public static collectionName : string = "user"
-       
+    public static schema : Schema = new Schema({
+        "username" : new properties.StringProperty(),
+        "password" : new properties.StringProperty(),
+        "role" : new properties.StringEnumProperty(Role.ALL)
+    })
+
     public username : string;
-    public role : Role;
+    public password : string;
+    public role : string;
 
     public constructor(private db : monk.Monk, user? : UserModel) 
     {
-        super(db.get(User.collectionName), ["username", "role"], user)
+        super(db.get(User.collectionName), User.schema, user)
     }
 
     /** 
@@ -70,19 +84,17 @@ export class User extends ModelBase<UserModel> implements UserModel {
     public static createDummy(db : monk.Monk) : void {                      
         var col : monk.Collection = db.get(User.collectionName);
         col.insert([
-            {username: "darkVador", role: "staff"},
-            {username: "jesus", role: "member"}
+            
         ])
     }
 
     public static determineRole(str : string) : Role {
-        let tempRole : Role
         if (str == "staff") {
             return Role.staff
         } else if (str == "member") {
             return Role.member
         } else {
-        return Role.anonymous
+            return Role.anonymous
         }
     }
 }

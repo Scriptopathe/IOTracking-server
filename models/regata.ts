@@ -2,68 +2,55 @@ import * as monk from "monk"
 import * as modelHelpers from "../helpers/model"
 import * as properties from "./schema/property"
 
+import { Race, RaceModel } from "../models/race"
 import { ModelBase, Reference } from "../models/base"
-import { RaceMap } from "../models/race-map"
 import { Point, Property } from "./schema/property"
-import { RaceData } from '../models/race-data'
-import { Racer } from '../models/racer'
 import { Schema } from "./schema/schema"
-
-export class ConcurrentModel { }
 
 /**
  * Interface containing all the fields of a race object.
  */
-export interface RaceModel {
+export interface RegattaModel {
+    races : Array<Race>
+    location : string
     startDate : Date
     endDate : Date
-    concurrents : Array<Racer>
-    map : Reference<RaceMap>
-    data : Reference<RaceData>
-    buoys : Array<Point>
-    name : string
 }
 
 /**
  * Database model implementation of the RaceModel object.
  */
-export class Race extends ModelBase<RaceModel> {
-    public static collectionName : string = "races"
+export class Regatta extends ModelBase<RegattaModel> {
+    public static collectionName : string = "regattas"
     public static schema : Schema = new Schema({
         "startDate" : new properties.DateProperty(),
         "endDate" : new properties.DateProperty(),
-        "concurrents" : new properties.ArrayProperty(new properties.ObjectProperty(Racer.schema)),
-        "map"  : new properties.ReferenceProperty(),
-        "data" : new properties.ReferenceProperty(),
-        "buoys" : new properties.ArrayProperty(new properties.PointProperty()),
-        "name" : new properties.StringProperty()
+        "races" : new properties.ArrayProperty(new properties.ObjectProperty<Race>(Race.schema)),
+        "location" : new properties.StringProperty()
     })
 
     public startDate : Date
     public endDate : Date
-    public concurrents : Array<Racer>
-    public map : Reference<RaceMap>
-    public data : Reference<RaceData>
-    public buoys : Array<Point>
-    public name : string
+    public races : Array<RaceModel>
+    public location : string
 
-    public constructor(private db : monk.Monk, race? : RaceModel) 
+    public constructor(private db : monk.Monk, race? : RegattaModel) 
     {
-        super(db.get(Race.collectionName), Race.schema, race)
+        super(db.get(Regatta.collectionName), Regatta.schema, race)
     }
 
     /** 
-     * Loads a model Race from the database.
+     * Loads a model Regatta from the database.
      * @param needle used to query the database. See mongo db documentation for details.
      * @param db database instance to use to load the model.
      * @param done callback executed once the loading has been performed.
      */
-    public static findOne(db : monk.Monk, needle : any, done : (x : Race)  => void) : void {
-        var col : monk.Collection = db.get(Race.collectionName)
-        this.findAndWrap<RaceModel, Race>(
+    public static findOne(db : monk.Monk, needle : any, done : (x : Regatta)  => void) : void {
+        var col : monk.Collection = db.get(Regatta.collectionName)
+        this.findAndWrap<RegattaModel, Regatta>(
             col, 
             needle,
-            (col, model) => { return new Race(db, model) },
+            (col, model) => { return new Regatta(db, model) },
             (items => { done(items[0]) })
         )
     }
@@ -78,13 +65,13 @@ export class Race extends ModelBase<RaceModel> {
     public static find(
             db : monk.Monk,
             needle : any, 
-            done : (obj : Race[])  => void) : void
+            done : (obj : Regatta[])  => void) : void
     {
-        let col  : monk.Collection = db.get(Race.collectionName)
-        this.findAndWrap<RaceModel, Race>(
+        let col  : monk.Collection = db.get(Regatta.collectionName)
+        this.findAndWrap<RegattaModel, Regatta>(
             col, 
             needle, 
-            (col, model) => { return new Race(db, model) },
+            (col, model) => { return new Regatta(db, model) },
             done
         )
     }
@@ -93,9 +80,11 @@ export class Race extends ModelBase<RaceModel> {
      * Creates a dummy database.
      */
     public static createDummy(db : monk.Monk) : void {
-        var col : monk.Collection = db.get(Race.collectionName);
+        var col : monk.Collection = db.get(Regatta.collectionName);
         col.insert([
-
+            {
+                
+            }
         ])
     }
 }

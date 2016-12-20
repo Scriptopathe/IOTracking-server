@@ -21,7 +21,7 @@ export interface Restifiable
  *      - to pass to the findAndWrap method
  * 
  * The REST interface provides the following functions : 
- *   POST   /         (data) ==> 200 OK or 400
+ *   POST   /         (data) ==> 201 OK or 400
  *   PUT    /id       (data) ==> 200 OK or 400
  *   GET    /                ==> 200 OK + (data)
  *   GET    /id              ==> 200 OK + (data) or 404
@@ -106,6 +106,14 @@ export function restify(Type : Restifiable)
         )
     })
 
+    r.get("/dummy", function(req, res, next) {
+        let unwrapped = Type.schema.unwrap(Type.schema.random())
+        res.statusCode = 200
+        res.setHeader("Content-Type", "application/json")
+        res.write(JSON.stringify(unwrapped))
+        res.end()
+    })
+
     r.get("/", function(req, res, next) {
         Type.findAndWrap(
             req["db"].get(Type.collectionName), {},
@@ -120,6 +128,7 @@ export function restify(Type : Restifiable)
             }
         )
     })
+
 
     r.get("/:identifier", function(req, res, next) {
         let id = req.params["identifier"]

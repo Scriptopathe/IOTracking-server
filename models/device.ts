@@ -1,12 +1,13 @@
 import * as monk from "monk"
 import * as promise from "../helpers/model"
+import * as properties from "./schema/property"
 import { ModelBase } from "../models/base"
- 
+import { Schema } from "./schema/schema"
 /**
  * Interface containing all the fields of a device object.
  */
 export interface DeviceModel {
-    id : number;
+    hwid : string;
     name : string;
 }
 
@@ -14,14 +15,18 @@ export interface DeviceModel {
  * Database model implementation of the DeviceModel object.
  */
 export class Device extends ModelBase<DeviceModel> implements DeviceModel {
-    private static dbName : string = "devices"
-       
-    public id : number;
+    public static collectionName : string = "devices"
+    public static schema : Schema = new Schema({
+        "hwid" : new properties.StringProperty(),
+        "name" : new properties.StringProperty()
+    })
+
+    public hwid : string;
     public name : string;
 
     public constructor(private db : monk.Monk, device? : DeviceModel) 
     {
-        super(db.get(Device.dbName), ["id", "name"], device)
+        super(db.get(Device.collectionName), Device.schema, device)
     }
 
     /** 
@@ -31,7 +36,7 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
      * @param done callback executed once the loading has been performed.
      */
     public static findOne(db : monk.Monk, needle : any, done : (x : Device)  => void) : void {
-        var col : monk.Collection = db.get(Device.dbName)
+        var col : monk.Collection = db.get(Device.collectionName)
         this.findAndWrap<DeviceModel, Device>(
             col, 
             needle,
@@ -52,7 +57,7 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
             needle : any, 
             done : (obj : Device[])  => void) : void
     {
-        let col  : monk.Collection = db.get(Device.dbName)
+        let col  : monk.Collection = db.get(Device.collectionName)
         this.findAndWrap<DeviceModel, Device>(
             col, 
             needle, 
@@ -65,10 +70,10 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
      * Creates a dummy database.
      */
     public static createDummy(db : monk.Monk) : void {                      
-        var col : monk.Collection = db.get(Device.dbName);
+        var col : monk.Collection = db.get(Device.collectionName);
         col.insert([
-            {id: "1", name: "TRUC"},
-            {id: "2", name: "TRUC2"}
+            {hwid: "1", name: "TRUC"},
+            {hwid: "2", name: "TRUC2"}
         ])
     }
 }
