@@ -30,7 +30,11 @@ export interface Restifiable
 export function restify(Type : Restifiable)
 {
     let r : express.Router = express.Router()
-    
+    r.use(function(req, res, next) {
+        res.setHeader("Access-Control-Allow-Origin", "*")
+        next()
+    })
+
     r.post("/", function(req, res, next) {
         let dataStr = req.body
         let x = JSON.parse(req.body)
@@ -128,8 +132,9 @@ export function restify(Type : Restifiable)
     r.get("/", function(req, res, next) {
         let first = req.query["first"] == undefined ? 0 : Number(req.query["first"])
         let last = req.query["last"] == undefined ? -1 : Number(req.query["last"])
+        let needle = req.query["needle"] == undefined ? {} : JSON.parse(req.query["needle"])
         Type.findAndWrap(
-            req["db"].get(Type.collectionName), {},
+            req["db"].get(Type.collectionName), needle,
             (col : any, model : any) => new (<any> Type)(req["db"], model),
             function(objs : any[]) {
                 let strings : string[] = []
@@ -142,6 +147,7 @@ export function restify(Type : Restifiable)
                     strings.push(JSON.parse(objs[i].stringify()))
                 }
 
+                res.setHeader("X-IOTracking-Count", "" + objs.length)
                 res.write(JSON.stringify(strings))
                 res.end()
             }
