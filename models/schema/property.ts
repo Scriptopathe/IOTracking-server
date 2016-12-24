@@ -340,14 +340,18 @@ export class BoolProperty extends Property {
 
 export class DateProperty extends Property {
     public wrap(value : Date) {
-        return value
+        return this.unwrap(value).getTime()
     }
 
     public unwrap(obj : any) {
         if(obj == undefined)
             return new Date()
         
-        if(obj instanceof(Date)) {
+        if(typeof(obj) == "number") {
+            var date = new Date()
+            date.setTime(obj)
+            return date
+        } else if(obj instanceof(Date)) {
             return <Date> obj
         } else {
             let date = new Date(obj)
