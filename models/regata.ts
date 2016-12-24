@@ -15,6 +15,7 @@ export interface RegattaModel {
     location : string
     startDate : Date
     endDate : Date
+    name : string
 }
 
 /**
@@ -26,13 +27,15 @@ export class Regatta extends ModelBase<RegattaModel> {
         "startDate" : new properties.DateProperty(),
         "endDate" : new properties.DateProperty(),
         "races" : new properties.ArrayProperty(new properties.ObjectProperty<Race>(Race.schema)),
-        "location" : new properties.StringProperty()
+        "location" : new properties.StringProperty(),
+        "name"     : new properties.StringProperty() 
     })
 
     public startDate : Date
     public endDate : Date
     public races : Array<RaceModel>
     public location : string
+    public name : string
 
     public constructor(private db : monk.Monk, race? : RegattaModel) 
     {
