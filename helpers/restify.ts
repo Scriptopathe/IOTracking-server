@@ -32,6 +32,7 @@ export function restify(Type : Restifiable)
     let r : express.Router = express.Router()
     r.use(function(req, res, next) {
         res.setHeader("Access-Control-Allow-Origin", "*")
+        res.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST")
         next()
     })
 
