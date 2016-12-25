@@ -33,6 +33,7 @@ export function restify(Type : Restifiable)
     r.use(function(req, res, next) {
         res.setHeader("Access-Control-Allow-Origin", "*")
         res.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST")
+        res.setHeader("Access-Control-Expose-Headers", "X-IOTracking-Count")
         next()
     })
 
