@@ -16,8 +16,8 @@ import * as uuid from 'uuid'
 let router = express.Router()
 
 router.get("/", function(req, res, next) {
-    let raceCount = 10
-    let regattaCount = 2
+    let raceCount = 100
+    let regattaCount = 20
     let racesPerRegatta = raceCount / regattaCount
     let devicesCount = 20
     let rawDataPoints = 50
@@ -104,69 +104,71 @@ router.get("/", function(req, res, next) {
 
 
         console.log("CREATED Race Data and Race map")
-    }, 200)
 
-    setTimeout(function() {
-        console.log("Creating : Regattas...")
-        // Regattas
-        Regatta.clearCollection(db, Regatta)
-        var dateOrigin = new Date()
-        dateOrigin.setMonth(0)
-        dateOrigin.setFullYear(2016, 1, 1)
-        for(let regattaId = 0; regattaId < regattaCount; regattaId++) {
-            var startDate = new Date(dateOrigin)
-            startDate.setDate(startDate.getDate() + 1)
+        setTimeout(function() {
+            console.log("Creating : Regattas...")
+            // Regattas
+            Regatta.clearCollection(db, Regatta)
+            var dateOrigin = new Date()
+            dateOrigin.setDate(dateOrigin.getDate() - regattaCount / 2)
+            for(let regattaId = 0; regattaId < regattaCount; regattaId++) {
+                var startDate = new Date(dateOrigin)
+                startDate.setDate(startDate.getDate() + regattaId)
 
-            var endDate = new Date(startDate)
-            endDate.setDate(endDate.getDate() + 1)
+                var endDate = new Date(dateOrigin)
+                endDate.setDate(endDate.getDate() + regattaId + 1)
 
-            // RACES
-            var races : RaceModel[] = []
-            for(let raceId = 0; raceId < racesPerRegatta; raceId++) {
-                var raceSd = new Date(startDate)
-                raceSd.setHours(8 + raceId)
-                var raceEd = new Date(startDate)
-                raceEd.setHours(9 + raceId)
 
-                // Racers
-                var racers : RacerModel[] = []
-                for(let i = 0; i < devicesCount; i++) {
-                    racers.push({
-                        boatIdentifier: uuid(),
-                        device: devices[i].identifier,
-                        user: users[i].identifier
-                    })
+                // RACES
+                var races : RaceModel[] = []
+                for(let raceId = 0; raceId < racesPerRegatta; raceId++) {
+                    var raceSd = new Date(startDate)
+                    raceSd.setHours(8 + raceId)
+                    var raceEd = new Date(startDate)
+                    raceEd.setHours(9 + raceId)
+
+                    // Racers
+                    var racers : RacerModel[] = []
+                    for(let i = 0; i < devicesCount; i++) {
+                        racers.push({
+                            boatIdentifier: uuid(),
+                            device: devices[i].identifier,
+                            user: users[i].identifier
+                        })
+                    }
+
+
+                    var race : RaceModel = {
+                        startDate: raceSd,
+                        endDate: raceEd,
+                        data: raceData[raceId].identifier,
+                        buoys: buoys[raceId],
+                        map: raceMaps[0].identifier,
+                        name: "Race_" + raceId,
+                        concurrents: racers
+                    }
+
+                    races.push(race)
                 }
 
+                var regatta = new Regatta(db, {
+                    name: "Regatta_" + regattaId,
+                    location: "Lake Montbel",
+                    startDate: startDate,
+                    endDate: endDate,
+                    races: races
+                })
 
-                var race : RaceModel = {
-                    startDate: raceSd,
-                    endDate: raceEd,
-                    data: raceData[raceId].identifier,
-                    buoys: buoys[raceId],
-                    map: raceMaps[0].identifier,
-                    name: "Race_" + raceId,
-                    concurrents: racers
-                }
-
-                races.push(race)
+                regatta.saveAndWait()
             }
 
-            var regatta = new Regatta(db, {
-                name: "Regatta_" + regattaId,
-                location: "Lake Montbel",
-                startDate: startDate,
-                endDate: endDate,
-                races: races
-            })
+            console.log("CREATED : Regattas")    
+            res.write("Everything created.")
+            res.end()
+        }, 1000)
+    }, 400)
 
-            regatta.saveAndWait()
-        }
-
-        console.log("CREATED : Regattas")    
-        res.write("Everything created.")
-        res.end()
-    }, 600)
+    
     
 
 })
