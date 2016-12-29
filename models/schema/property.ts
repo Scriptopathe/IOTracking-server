@@ -222,11 +222,8 @@ export class TimePointProperty extends Property {
     }
 
     public unwrap(obj : any) {
-        console.log("unwrap timepoint : string ")
         if(typeof obj === "string") {
-            console.log("unwrap timepoint : strindededg ")
             var xyz = obj.split(';').map((value) => Number(value))
-            console.log("unwrap timepoint : string " + xyz.length)
             if(xyz.length != 3)
                 return undefined
             return { x: xyz[0], y: xyz[1], t : xyz[2] }

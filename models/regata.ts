@@ -11,7 +11,7 @@ import { Schema } from "./schema/schema"
  * Interface containing all the fields of a race object.
  */
 export interface RegattaModel {
-    races : Array<Race>
+    races : Array<RaceModel>
     location : string
     startDate : Date
     endDate : Date

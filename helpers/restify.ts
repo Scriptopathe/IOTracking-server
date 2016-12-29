@@ -64,7 +64,6 @@ export function restify(Type : Restifiable)
         }
 
         newobj.save()
-        
         res.statusCode = 201
         res.end()
     })

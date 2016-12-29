@@ -7,9 +7,8 @@ import { Property } from "./schema/property"
 /** 
  * Represents a reference to another object of the database.
  */
-export class Reference<T>
+export class Reference<T> extends String
 {
-    public constructor(public value : string) { }
 }
 
 export abstract class ModelBase<Model>
@@ -17,6 +16,7 @@ export abstract class ModelBase<Model>
     private _id : string = undefined
     private _schema : Schema = undefined
 
+    public get identifier() : Reference<Model> { return this._id }
     /**
      * Gets the schema of this model.
      */
@@ -65,12 +65,18 @@ export abstract class ModelBase<Model>
         let data = {}
         ModelBase.wrapProperties(data, this, this._schema)
 
-        if (this._id == undefined)
+        if (this._id == undefined) {
             (<any> this.col.insert(data)).then((doc : Model) => {
                 this._id = doc["_id"];
+                console.log("id ok ! ")
             })
-        else
+        } else {
             this.col.update({ _id : this["_id"] }, data)
+        }
+    }
+
+    public saveAndWait() {
+        this.save()
     }
 
     /**
@@ -120,6 +126,27 @@ export abstract class ModelBase<Model>
         }
     }
 
+
+    /**
+     * Performs a find operation on the database. 
+     * @param col collection where to find the data.
+     * @param needle used to query the database. See mongo db documentation for details.
+     * @param allocator used to allocate the Model wrapper instance from the raw model found
+     *        in the database.
+     * @param done callback to be executed when after the completion of the find operation. 
+     *        takes an array of instance of the model wrapper as arguments.
+     * @param err callback executed when an error occurs.
+     */
+    public static clearCollection<Model, ModelWrapper>(db : monk.Monk, Type : any) : void
+    {
+        var col = db.get(Type.collectionName)
+        
+        try {
+            col.remove({})
+        } catch (error) {
+            throw error   
+        }
+    }
     /**
      * Gets the string representation of this object.
      */

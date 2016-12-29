@@ -6,7 +6,7 @@ import { ModelBase, Reference } from "../models/base"
 import { RaceMap } from "../models/race-map"
 import { Point, Property } from "./schema/property"
 import { RaceData } from '../models/race-data'
-import { Racer } from '../models/racer'
+import { Racer, RacerModel } from '../models/racer'
 import { Schema } from "./schema/schema"
 
 export class ConcurrentModel { }
@@ -17,7 +17,7 @@ export class ConcurrentModel { }
 export interface RaceModel {
     startDate : Date
     endDate : Date
-    concurrents : Array<Racer>
+    concurrents : Array<RacerModel>
     map : Reference<RaceMap>
     data : Reference<RaceData>
     buoys : Array<Point>
@@ -41,7 +41,7 @@ export class Race extends ModelBase<RaceModel> {
 
     public startDate : Date
     public endDate : Date
-    public concurrents : Array<Racer>
+    public concurrents : Array<RacerModel>
     public map : Reference<RaceMap>
     public data : Reference<RaceData>
     public buoys : Array<Point>

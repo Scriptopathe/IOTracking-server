@@ -18,11 +18,15 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
     public static collectionName : string = "devices"
     public static schema : Schema = new Schema({
         "hwid" : new properties.StringProperty(),
-        "name" : new properties.StringProperty()
+        "name" : new properties.StringProperty(),
+        "batteryLevel" : new properties.IntegerProperty(),
+        "isActive": new properties.BoolProperty()
     })
 
     public hwid : string;
     public name : string;
+    public batteryLevel : number
+    public isActive? : boolean
 
     public constructor(private db : monk.Monk, device? : DeviceModel) 
     {
