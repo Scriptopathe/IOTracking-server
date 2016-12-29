@@ -91,6 +91,24 @@ export abstract class ModelBase<Model>
     }
     
     /**
+     * Extract special fields from the needle to pass them as options.
+     */
+    static processNeedle(needle : any) : any {
+        var filter = needle
+        var options = {}
+        if(needle["$orderby"] != undefined) {
+            options["sort"] = needle["$orderby"]
+            delete filter["$orderby"]
+        }
+        console.log(filter)
+        console.log(options)
+        return {
+            "filter" : filter,
+            "options" : options
+        }
+    }
+
+    /**
      * Performs a find operation on the database. 
      * @param col collection where to find the data.
      * @param needle used to query the database. See mongo db documentation for details.
@@ -109,7 +127,9 @@ export abstract class ModelBase<Model>
             ) : void
     {
         try {
-            var prom : modelHelpers.FindPromise<Model> = modelHelpers.castFind<Model>(col.find(needle))
+            var pneedle = this.processNeedle(needle)
+            var prom : modelHelpers.FindPromise<Model> = modelHelpers.castFind<Model>(
+                col.find(pneedle["filter"], pneedle["options"]))
             let docs : ModelWrapper[] = []
         
             prom.each(function(doc : Model) {
