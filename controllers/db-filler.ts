@@ -97,7 +97,7 @@ router.get("/", function(req, res, next) {
             westLongReference: 12.0,
             northLatReference: 35.0,
             southLatReference: 37.0,
-            raceMapImageUrl: "static/lake-montbel.png"
+            raceMapImageUrl: "lake-montbel.png"
         })
         map.saveAndWait()
         raceMaps.push(map)
@@ -133,6 +133,7 @@ router.get("/", function(req, res, next) {
                         racers.push({
                             boatIdentifier: uuid(),
                             device: devices[i].identifier,
+                            skipperName: "Skipper_" + i,
                             user: users[i].identifier
                         })
                     }
@@ -165,17 +166,13 @@ router.get("/", function(req, res, next) {
             console.log("CREATED : Regattas")    
             res.write("Everything created.")
             res.end()
-        }, 1000)
-    }, 400)
-
-    
-    
-
+        }, 2000)
+    }, 1000)
 })
 
 function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
     // Points <=> [0, 1024] en x et y
-    let ptsPerCheckpoint = 10
+    let ptsPerCheckpoint = 25
     var pos : TimePoint = {
         x: checkpoints[0].x,
         y: checkpoints[0].y,
@@ -190,22 +187,39 @@ function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
             Math.pow(checkpoints[i].y - pos.y, 2))
         
         let dir : Point = {
-            x: (checkpoints[i].x - pos.x) / distance,
-            y: (checkpoints[i].y - pos.y) / distance
+            x: (1.0 * checkpoints[i].x - pos.x) / distance,
+            y: (1.0 * checkpoints[i].y - pos.y) / distance
         }
 
         let meanSpeed = distance / ptsPerCheckpoint
 
         for(let j = 0; j < ptsPerCheckpoint; j++) {
-            let speed = Math.round(meanSpeed * (2 * Math.random() - 1))
+            distance = Math.sqrt(
+                Math.pow(checkpoints[i].x - pos.x, 2) +
+                Math.pow(checkpoints[i].y - pos.y, 2))
+            
+            dir = {
+                x: (1.0 * checkpoints[i].x - pos.x) / distance,
+                y: (1.0 * checkpoints[i].y - pos.y) / distance
+            }
+
+            let speed = Math.round(meanSpeed * (1 + (Math.random()-0.5)*0.1))
             let newPos = {
-                x: pos.x + dir.x * speed,
-                y: pos.y + dir.y * speed,
+                x: pos.x + dir.x * speed + (30 * (Math.random() - 0.5)),
+                y: pos.y + dir.y * speed + (30 * (Math.random() - 0.5)),
                 t: pos.t + 1 + (Math.random() - 0.5)*0.1 
             }
             pts.push(newPos)
             pos = newPos
         }
+
+        pos = {
+            x: checkpoints[i].x,
+            y: checkpoints[i].y,
+            t: pos.t + 1
+        }
+
+        pts.push(pos)
     }
     return pts
 }
