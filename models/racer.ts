@@ -10,6 +10,7 @@ import { User } from "../models/user"
  */
 export interface RacerModel {
     boatIdentifier : string
+    skipperName : string
     user : Reference<User>
     device : Reference<Device>
 }
@@ -22,10 +23,12 @@ export class Racer extends ModelBase<RacerModel> implements RacerModel {
     public static schema : Schema = new Schema({
         "boatIdentifier" : new properties.StringProperty(),
         "user" : new properties.ReferenceProperty(),
+        "skipperName" : new properties.StringProperty(),
         "device" : new properties.ReferenceProperty()
     })
 
     public boatIdentifier : string
+    public skipperName : string
     public user : Reference<User>
     public device : Reference<Device>
 
