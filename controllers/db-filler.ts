@@ -14,165 +14,17 @@ import { Point, TimePoint } from '../models/schema/property'
 import * as uuid from 'uuid'
 
 let router = express.Router()
+let raceCount = 100
+let regattaCount = 20
+let racesPerRegatta = raceCount / regattaCount
+let devicesCount = 20
+let bounds = 1024
+let buoysCount = 6
 
-router.get("/", function(req, res, next) {
-    let raceCount = 100
-    let regattaCount = 20
-    let racesPerRegatta = raceCount / regattaCount
-    let devicesCount = 20
-    let rawDataPoints = 50
-    let bounds = 1024
-
-    let db : monk.Monk = req["db"]
-    
-    // Devices
-    let devices : Device[] = []
-    Device.clearCollection(db, Device);
-    for(let i = 0; i < devicesCount; i++) {
-        var device = new Device(db, {
-            hwid: uuid(),
-            name: "DEV-" + i
-        })
-        device.saveAndWait()
-        devices.push(device)
-    }
-    console.log("Devices created")
-
-    // Users
-    let users : User[] = []
-    Device.clearCollection(db, User)
-    for(let i = 0; i < devicesCount; i++) {
-        var user = new User(db, {
-            username: "user" + i,
-            password : "password" + i,
-            role: Role.staff
-        })
-
-        user.saveAndWait()
-        users.push(user)
-    }
-    console.log("Users created.")
-
-
-    // Buoys for each race
-    let buoys : Point[][] = []
-    for(let i = 0; i < raceCount; i++) {
-        let b : Point[] = []
-        for(let buoy = 0; buoy < 4; buoy++) {
-            b.push({
-                x: Math.floor(Math.random() * bounds),
-                y: Math.floor(Math.random() * bounds),
-            })
-        }
-        buoys.push(b)
-    }
-    console.log("Buoys created.")
-
-
-    let raceData : RaceData[] = []
-    let raceMaps : RaceMap[] = []
-    setTimeout(function() {
-        console.log("Creating : Race Data and Race map...")
-        // Race Data
-        RaceData.clearCollection(db, RaceData)
-        for(let i = 0; i < raceCount; i++) {
-            var raw = {}
-            for (let dev = 0; dev < devicesCount; dev++) {
-                // For each device, builds a set of geotracking data
-                raw[<string>devices[dev].identifier] = generateRandomTrajectory(buoys[i])
-            }
-
-            var data = new RaceData(db, {
-                rawData: raw
-            })
-
-            data.saveAndWait()
-            raceData.push(data)
-        }
-
-        // Race maps
-        RaceMap.clearCollection(db, RaceMap)
-        let map = new RaceMap(db, {
-            eastLongReference: 10.0,
-            westLongReference: 12.0,
-            northLatReference: 35.0,
-            southLatReference: 37.0,
-            raceMapImageUrl: "lake-montbel.png"
-        })
-        map.saveAndWait()
-        raceMaps.push(map)
-
-
-        console.log("CREATED Race Data and Race map")
-
-        setTimeout(function() {
-            console.log("Creating : Regattas...")
-            // Regattas
-            Regatta.clearCollection(db, Regatta)
-            var dateOrigin = new Date()
-            dateOrigin.setDate(dateOrigin.getDate() - regattaCount / 2)
-            for(let regattaId = 0; regattaId < regattaCount; regattaId++) {
-                var startDate = new Date(dateOrigin)
-                startDate.setDate(startDate.getDate() + regattaId)
-
-                var endDate = new Date(dateOrigin)
-                endDate.setDate(endDate.getDate() + regattaId + 1)
-
-
-                // RACES
-                var races : RaceModel[] = []
-                for(let raceId = 0; raceId < racesPerRegatta; raceId++) {
-                    var raceSd = new Date(startDate)
-                    raceSd.setHours(8 + raceId)
-                    var raceEd = new Date(startDate)
-                    raceEd.setHours(9 + raceId)
-
-                    // Racers
-                    var racers : RacerModel[] = []
-                    for(let i = 0; i < devicesCount; i++) {
-                        racers.push({
-                            boatIdentifier: uuid(),
-                            device: devices[i].identifier,
-                            skipperName: "Skipper_" + i,
-                            user: users[i].identifier
-                        })
-                    }
-
-
-                    var race : RaceModel = {
-                        startDate: raceSd,
-                        endDate: raceEd,
-                        data: raceData[raceId].identifier,
-                        buoys: buoys[raceId],
-                        map: raceMaps[0].identifier,
-                        name: "Race_" + raceId,
-                        concurrents: racers
-                    }
-
-                    races.push(race)
-                }
-
-                var regatta = new Regatta(db, {
-                    name: "Regatta_" + regattaId,
-                    location: "Lake Montbel",
-                    startDate: startDate,
-                    endDate: endDate,
-                    races: races
-                })
-
-                regatta.saveAndWait()
-            }
-
-            console.log("CREATED : Regattas")    
-            res.write("Everything created.")
-            res.end()
-        }, 2000)
-    }, 1000)
-})
 
 function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
     // Points <=> [0, 1024] en x et y
-    let ptsPerCheckpoint = 25
+    let ptsPerCheckpoint = 50
     var pos : TimePoint = {
         x: checkpoints[0].x,
         y: checkpoints[0].y,
@@ -207,7 +59,7 @@ function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
             let newPos = {
                 x: pos.x + dir.x * speed + (30 * (Math.random() - 0.5)),
                 y: pos.y + dir.y * speed + (30 * (Math.random() - 0.5)),
-                t: pos.t + 1 + (Math.random() - 0.5)*0.1 
+                t: pos.t + 10 + (Math.random() - 0.5)*5
             }
             pts.push(newPos)
             pos = newPos
@@ -216,13 +68,194 @@ function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
         pos = {
             x: checkpoints[i].x,
             y: checkpoints[i].y,
-            t: pos.t + 1
+            t: pos.t + 10
         }
 
         pts.push(pos)
     }
     return pts
 }
+
+function createDevices(db : monk.Monk) : Device[] {
+    let devices : Device[] = []
+    for(let i = 0; i < devicesCount; i++) {
+        var device = new Device(db, {
+            hwid: uuid(),
+            name: "DEV-" + i
+        })
+        device.saveAndWait()
+        devices.push(device)
+    }
+    console.log("Devices created")
+    return devices
+}
+
+function createUsers(db : monk.Monk) : User[] {
+    // Users
+    let users : User[] = []
+    for(let i = 0; i < devicesCount; i++) {
+        var user = new User(db, {
+            username: "user" + i,
+            password : "password" + i,
+            role: Role.staff
+        })
+
+        user.saveAndWait()
+        users.push(user)
+    }
+    console.log("Users created.")
+    return users
+}
+
+function createBuoys(db : monk.Monk) : Point[][] {
+    // Buoys for each race
+    let buoys : Point[][] = []
+    for(let i = 0; i < raceCount; i++) {
+        let b : Point[] = []
+        for(let buoy = 0; buoy < buoysCount; buoy++) {
+            b.push({
+                x: Math.floor(Math.random() * bounds),
+                y: Math.floor(Math.random() * bounds),
+            })
+        }
+        buoys.push(b)
+    }
+    console.log("Buoys created.")
+    return buoys
+}
+
+function createRaceData(db : monk.Monk, devices : Device[], buoys : Point[][]) : RaceData[] {
+    let raceData : RaceData[] = []
+    // Race Data
+    for(let i = 0; i < raceCount; i++) {
+        var raw = {}
+        for (let dev = 0; dev < devicesCount; dev++) {
+            // For each device, builds a set of geotracking data
+            raw[<string>devices[dev].identifier] = generateRandomTrajectory(buoys[i])
+        }
+
+        var data = new RaceData(db, {
+            rawData: raw
+        })
+
+        data.saveAndWait()
+        raceData.push(data)
+    }
+    console.log("Race data created.")
+    return raceData
+}
+
+function createRaceMaps(db : monk.Monk) : RaceMap[] {
+    let raceMaps : RaceMap[] = []
+    // Race maps
+    let map = new RaceMap(db, {
+        eastLongReference: 10.0,
+        westLongReference: 12.0,
+        northLatReference: 35.0,
+        southLatReference: 37.0,
+        raceMapImageUrl: "lake-montbel.png"
+    })
+    map.saveAndWait()
+    raceMaps.push(map)
+    console.log("Race maps created.")
+    return raceMaps
+}
+
+function createRegattas(db : monk.Monk, 
+        devices : Device[],
+        users : User[],
+        raceData : RaceData[], 
+        buoys : Point[][],
+        raceMaps : RaceMap[]) {
+    console.log("Creating : Regattas...")
+    // Regattas
+    var dateOrigin = new Date()
+    var dayStep = 15
+    dateOrigin.setDate(dateOrigin.getDate() - (regattaCount / 2) * dayStep)
+    
+    for(let regattaId = 0; regattaId < regattaCount; regattaId++) {
+        var startDate = new Date(dateOrigin)
+        startDate.setDate(startDate.getDate() + regattaId * dayStep)
+
+        var endDate = new Date(dateOrigin)
+        endDate.setDate(endDate.getDate() + regattaId * dayStep + 1)
+
+
+        // RACES
+        var races : RaceModel[] = []
+        for(let raceId = 0; raceId < racesPerRegatta; raceId++) {
+            var raceSd = new Date(startDate)
+            raceSd.setHours(8 + raceId)
+            var raceEd = new Date(startDate)
+            raceEd.setHours(9 + raceId)
+
+            // Racers
+            var racers : RacerModel[] = []
+            for(let i = 0; i < devicesCount; i++) {
+                racers.push({
+                    boatIdentifier: uuid(),
+                    device: devices[i].identifier,
+                    skipperName: "Skipper_" + i,
+                    user: users[i].identifier
+                })
+            }
+
+
+            var race : RaceModel = {
+                startDate: raceSd,
+                endDate: raceEd,
+                data: raceData[raceId].identifier,
+                buoys: buoys[raceId],
+                map: raceMaps[0].identifier,
+                name: "Race_" + raceId,
+                concurrents: racers
+            }
+
+            races.push(race)
+        }
+
+        var regatta = new Regatta(db, {
+            name: "Regatta_" + regattaId,
+            location: "Lake Montbel",
+            startDate: startDate,
+            endDate: endDate,
+            races: races
+        })
+
+        regatta.saveAndWait()
+    }
+
+    console.log("CREATED : Regattas")    
+}
+
+router.get("/", function(req, res, next) {
+    let db : monk.Monk = req["db"]
+    
+    // Devices
+    let devices : Device[] = []
+    Device.clearCollection(db, Device)
+    Regatta.clearCollection(db, Regatta)
+    RaceData.clearCollection(db, RaceData)
+    Device.clearCollection(db, User)
+    RaceMap.clearCollection(db, RaceMap)
+
+    setTimeout(function() {
+        let devices = createDevices(db)
+        let users = createUsers(db)
+        let buoys = createBuoys(db)
+        let raceMaps = createRaceMaps(db)
+
+        setTimeout(function() {
+            let raceData = createRaceData(db, devices, buoys)
+            setTimeout(function() {
+                createRegattas(db, devices, users, raceData, buoys, raceMaps)
+                res.write("Everything created.")
+                res.end()
+            }, 10000)
+        }, 1000)
+    }, 1000)
+})
+
 
 
 export { router }

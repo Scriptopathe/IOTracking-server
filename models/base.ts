@@ -68,7 +68,6 @@ export abstract class ModelBase<Model>
         if (this._id == undefined) {
             (<any> this.col.insert(data)).then((doc : Model) => {
                 this._id = doc["_id"];
-                console.log("id ok ! ")
             })
         } else {
             this.col.update({ _id : this["_id"] }, data)
