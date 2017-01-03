@@ -81,7 +81,9 @@ function createDevices(db : monk.Monk) : Device[] {
     for(let i = 0; i < devicesCount; i++) {
         var device = new Device(db, {
             hwid: uuid(),
-            name: "DEV-" + i
+            name: "DEV-" + i,
+            batteryLevel: Math.ceil((Math.random() * 100)),
+            isActive: Math.random() > 0.5
         })
         device.saveAndWait()
         devices.push(device)

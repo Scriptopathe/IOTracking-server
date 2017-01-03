@@ -7,8 +7,10 @@ import { Schema } from "./schema/schema"
  * Interface containing all the fields of a device object.
  */
 export interface DeviceModel {
-    hwid : string;
-    name : string;
+    hwid : string
+    name : string
+    batteryLevel : number
+    isActive : boolean
 }
 
 /**
@@ -26,7 +28,7 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
     public hwid : string;
     public name : string;
     public batteryLevel : number
-    public isActive? : boolean
+    public isActive : boolean
 
     public constructor(private db : monk.Monk, device? : DeviceModel) 
     {

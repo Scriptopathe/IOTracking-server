@@ -33,6 +33,7 @@ export function restify(Type : Restifiable)
     r.use(function(req, res, next) {
         res.setHeader("Access-Control-Allow-Origin", "*")
         res.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST")
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type")
         res.setHeader("Access-Control-Expose-Headers", "X-IOTracking-Count")
         next()
     })
@@ -71,13 +72,11 @@ export function restify(Type : Restifiable)
     r.put("/:identifier", function(req, res, next) {
         let id = req.params["identifier"]
         let obj = JSON.parse(req.body)
-
         let updobj = Type.findAndWrap(
             req["db"].get(Type.collectionName), {_id : id},
             (col : any, model : any) => new (<any> Type)(req["db"], model),
             function(objs : any[]) {
                 let x = objs[0]
-
                 if (objs.length == 0) {
                     res.statusCode = 404
                     res.statusMessage = "No such object"
@@ -86,16 +85,16 @@ export function restify(Type : Restifiable)
                 }
 
                 // Check if all properties contained
-                for(let prop of x.properties)
+                for(let prop in Type.schema.properties)
                 {
-                    if (!(prop in x)) {
+                    if (!(prop in obj)) {
                         res.statusCode = 400
                         res.statusMessage = "Bad object format"
                         res.end()
                         return
                     }
 
-                    x[prop] = obj.schema.properties[prop].unwrap(x[prop])
+                    x[prop] = Type.schema.properties[prop].unwrap(obj[prop])
 
                     if(x[prop] == undefined) {
                         res.statusCode = 400
