@@ -6,12 +6,17 @@ import * as middlewareDB from './middlewares/database'
 import * as bodyparser from "body-parser"
 import * as rawrestapi from "./controllers/raw-rest-api"
 import * as dbfiller from "./controllers/db-filler"
+import * as serverstate from "./controllers/server-state"
+
+import { MQTTServer }   from "./mqtt/mqtt-server"
 
 export class Server {
-  public app: express.Application;
+  public app: express.Application
+  public mqttServer : MQTTServer
 
   constructor() {
     this.app = express();
+    this.mqttServer = new MQTTServer()
   }
 
   /**
@@ -22,6 +27,7 @@ export class Server {
       this.app.use(middlewareDB.dbMiddleware)
       this.app.use("/fill", dbfiller.router)
       this.app.use('/example', exampleCtrl.router)
+      this.app.use('/api/state', serverstate.router)
       this.app.use('/api', rawrestapi.router)
       this.app.use(middleware404.router)
   }
@@ -29,9 +35,12 @@ export class Server {
 
   public run() : void {
       this.configure()
+      this.mqttServer.start()
       this.app.listen(3001)
   }
 }
+
+
 
 var server : Server = new Server()
 server.run()

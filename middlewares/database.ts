@@ -10,4 +10,4 @@ var dbMiddleware = function(req : express.Request, res : express.Response, next 
     next();
 }
 
-export { dbMiddleware }
+export { db, dbMiddleware }

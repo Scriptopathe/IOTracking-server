@@ -7,6 +7,14 @@ npm install -g tsd
 npm install -g node-dev 
 ```
 
+sudo wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
+sudo apt-key add mosquitto-repo.gpg.key
+cd /etc/apt/sources.list.d/
+sudo wget http://repo.mosquitto.org/debian/mosquitto-wheezy.list
+sudo apt-get update
+sudo apt-get install mosquitto
+sudo apt-get install mosquitto mosquitto-clients python-mosquitto
+
 # Initialisation du repos
 ```
 $ npm install
