@@ -54,8 +54,6 @@ router.delete("/live", function(req, res, next) {
 
 router.post("/live", function(req, res, next) {
     var db : monk.Monk = req["db"]
-    console.log("poooost")
-    console.dir(req.body)
     let obj = JSON.parse(req.body)
 
     ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
