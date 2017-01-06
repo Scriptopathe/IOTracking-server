@@ -9,6 +9,11 @@ import { Device }           from '../models/device'
 import { ServerState }      from '../models/server-state'
 import { TimePoint }        from '../models/schema/property'
 
+interface MessageContent {
+  x : number            // range 0-1024
+  y : number            // range 0-1024
+  batteryLevel : number // range 0-100
+}
 interface LoraRXInfo {
   mac: string
   time : string
@@ -35,19 +40,45 @@ export class MQTTServer
     this.client  = mqtt.connect('mqtt://127.0.0.1')
   }
 
+  decode(msg : String) : MessageContent {
+    let values =  msg.split(';').map((value) => parseInt(value))
+    return {
+      x: values[0],
+      y: values[1],
+      batteryLevel : values[3] 
+    }
+  }
+
   start() {
     var self = this
     this.client.on('connect', function () {
       self.client.subscribe(TOPIC)
     })
 
-    this.client.on('message', function (topic : string, message : string) {
-      var loraMessage : LoraRXMessage = JSON.parse(message)
-      
+    this.client.on('message', function (topic : string, messageBuffer : Buffer) {
+      console.log("Received message !")
+      var message = messageBuffer.toString()
+      var loraMessage : LoraRXMessage
+      try {
+         loraMessage = JSON.parse(message)
+      } catch(e) {
+        console.error("Message : " + message)
+        console.error("Bad message format. " + e)
+        return
+      }
       // Regatta.findAndWrap()
-      let x : number = 12
-      let y : number = 54
-      let t : number = 2
+      let messageContent : MessageContent 
+      
+      try {
+        messageContent = self.decode(loraMessage.data)
+      } catch(e) {
+        console.error("Bad data format (" + e + ") : " + loraMessage.data)
+        return
+      }
+
+      let t : number = new Date(loraMessage.rxInfo[0].time).getTime()
+      let x : number = messageContent.x
+      let y : number = messageContent.y
 
       ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
         (col, model) => new ServerState(db, <any>model),
@@ -89,12 +120,23 @@ export class MQTTServer
                         return
                       }
                       var device : Device = objs[0]
-                      
-                      raceData.rawData[<string>device.identifier].push({
-                        x: x, y: y, t: t
-                      })
 
+                      device.batteryLevel = messageContent.batteryLevel
+                      var data = {
+                        x: x, y: y, t: t
+                      }
+
+                      if(!(<string>device.identifier in raceData.rawData)) {
+                        console.error("Device " + device.name + " not in race ")
+                        return
+                        // raceData.rawData[<string>device.identifier] = []
+                      }
+
+                      raceData.rawData[<string>device.identifier].push(data)
+
+                      device.save()
                       raceData.save()
+                      console.log("Message processed successfully")
                     }
                   )
                 }
