@@ -40,12 +40,56 @@ export class MQTTServer
     this.client  = mqtt.connect('mqtt://127.0.0.1')
   }
 
-  decode(msg : String) : MessageContent {
+  decodeb64(msg : string) : MessageContent {
+    let x = 50
+    let y = 80
+    let bat = 14
+    let data = (x & 0x03FF) | ((y & 0x3FF) << 10) | ((bat & 0xF) << 20);
+    let bytes = new Uint8Array(3)
+    
+    bytes[0] = data & 0xFF
+    bytes[1] = (data >> 8) & 0xFF
+    bytes[2] = (data >> 16) & 0xFF
+    for(var i = 0; i < bytes.length; i++) {
+      console.log("byte[" + i + "] = " + bytes[i])
+    }
+    console.log("The number " + data)
+    
+    let encoded = new Buffer(bytes).toString("base64")
+    console.log("Encoded : " + encoded)
+
+    let decoded = new Buffer(encoded, "base64")
+    
+    
+    var number = 0
+    var byteNumbers = new Array(decoded.length);
+    for (var i = 0; i < decoded.length; i++) {
+      byteNumbers[i] = decoded.readUInt8(i);
+      console.log("byte[" + i + "] = " + byteNumbers[i])
+      number |= byteNumbers[i] << (8 * i)
+    }
+
+    
+    console.log("The decoded number " + number)
+    let newX = number & 0x03FF
+    let newY = (number >> 10) & 0x03FF
+    let newBat = (number >> 20) & 0xF
+    console.log("x, y, bat = " + newX + " - " + newY + " - " + newBat)
+
+    return {
+      x: 0,
+      y: 0,
+      batteryLevel: 0
+    }
+  }
+  decode(msg : string) : MessageContent {
+    this.decodeb64(msg)
+
     let values =  msg.split(';').map((value) => parseInt(value))
     return {
       x: values[0],
       y: values[1],
-      batteryLevel : values[3] 
+      batteryLevel : values[3]
     }
   }
 

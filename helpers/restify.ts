@@ -49,7 +49,7 @@ export function restify(Type : Restifiable)
         {
             if (!(prop in x)) {
                 res.statusCode = 400
-                res.statusMessage = "Bad object format"
+                res.statusMessage = "Bad object format : missing property " + prop 
                 res.end()
                 return
             }
@@ -89,7 +89,7 @@ export function restify(Type : Restifiable)
                 {
                     if (!(prop in obj)) {
                         res.statusCode = 400
-                        res.statusMessage = "Bad object format"
+                        res.statusMessage = "Bad object format : missing property " + prop
                         res.end()
                         return
                     }
