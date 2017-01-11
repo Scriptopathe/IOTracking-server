@@ -6,7 +6,7 @@ import { RaceModel }        from '../models/race'
 import { RaceData }         from '../models/race-data'
 import { Racer }            from '../models/racer'
 import { Device }           from '../models/device'
-import { ServerState }      from '../models/server-state'
+import { LiveState }      from '../models/live-state'
 import { TimePoint }        from '../models/schema/property'
 
 interface MessageContent {
@@ -124,16 +124,16 @@ export class MQTTServer
       let x : number = messageContent.x
       let y : number = messageContent.y
 
-      ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
-        (col, model) => new ServerState(db, <any>model),
-        (objs : ServerState[]) => {
+      LiveState.findAndWrap(db.get(LiveState.collectionName), {}, 
+        (col, model) => new LiveState(db, <any>model),
+        (objs : LiveState[]) => {
           if(objs.length == 0) {
             console.error("Ignore lora message: no live race.")
             return
           }
-          var serverState : ServerState = objs[0]
-          let regataId : string = <string>serverState.liveRegata
-          let raceId : number = serverState.liveRaceId
+          var liveState : LiveState = objs[0]
+          let regataId : string = <string>liveState.liveRegata
+          let raceId : number = liveState.liveRaceId
 
           Regatta.findAndWrap(db.get(Regatta.collectionName), { "_id" : regataId }, 
             (col, model) => new Regatta(db, <any>model),

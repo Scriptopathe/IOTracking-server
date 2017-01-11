@@ -1,7 +1,7 @@
 import * as monk            from "monk"
 import * as express         from "express"
-import { ServerState,
-         ServerStateModel } from "../models/server-state"
+import { LiveState,
+         LiveStateModel } from "../models/live-state"
 
 let router = express.Router()
 
@@ -15,21 +15,21 @@ router.use("/live", function(req, res, next) {
 router.get("/live", function(req, res, next) {
     var db : monk.Monk = req["db"]
 
-    ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
+    LiveState.findAndWrap(db.get(LiveState.collectionName), {}, 
     (col, model) => {
-        return new ServerState(db, <ServerStateModel>model)
+        return new LiveState(db, <LiveStateModel>model)
     },
     function(objs : any[]) {
-        var serverState : ServerState
+        var liveState : LiveState
         if(objs.length == 0) {
             res.write('{}')
             res.end()
             return
         } else {
-            serverState = objs[0]
+            liveState = objs[0]
         }
 
-        res.write(serverState.stringify())
+        res.write(liveState.stringify())
         res.end()
     })
 })
@@ -37,14 +37,14 @@ router.get("/live", function(req, res, next) {
 router.delete("/live", function(req, res, next) {
     var db : monk.Monk = req["db"]
 
-    ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
+    LiveState.findAndWrap(db.get(LiveState.collectionName), {}, 
     (col, model) => {
-        return new ServerState(db, <ServerStateModel>model)
+        return new LiveState(db, <LiveStateModel>model)
     },
     function(objs : any[]) {
         if(objs.length != 0) {
-            let serverState : ServerState = objs[0]
-            serverState.delete()
+            let liveState : LiveState = objs[0]
+            liveState.delete()
         }
 
         res.statusCode = 200
@@ -56,19 +56,19 @@ router.post("/live", function(req, res, next) {
     var db : monk.Monk = req["db"]
     let obj = JSON.parse(req.body)
 
-    ServerState.findAndWrap(db.get(ServerState.collectionName), {}, 
+    LiveState.findAndWrap(db.get(LiveState.collectionName), {}, 
     (col, model) => {
-        return new ServerState(db, <ServerStateModel>model)
+        return new LiveState(db, <LiveStateModel>model)
     },
     function(objs : any[]) {
-        var serverState : ServerState = null
+        var liveState : LiveState = null
         if(objs.length == 0) {
-            serverState = new ServerState(db)
+            liveState = new LiveState(db)
         } else {
-            serverState = objs[0]
+            liveState = objs[0]
         }
 
-        for(let prop in ServerState.schema.properties) {
+        for(let prop in LiveState.schema.properties) {
             if(!(prop in obj)) {
                 res.statusCode = 400
                 res.statusMessage = "Bad object format"
@@ -76,9 +76,9 @@ router.post("/live", function(req, res, next) {
                 return
             }
 
-            serverState[prop] = ServerState.schema.properties[prop].unwrap(obj[prop])
+            liveState[prop] = LiveState.schema.properties[prop].unwrap(obj[prop])
 
-            if(serverState[prop] == undefined) {
+            if(liveState[prop] == undefined) {
                 res.statusCode = 400
                 res.statusMessage = "Property " + prop + " has incorrect value"
                 res.end()
@@ -86,7 +86,7 @@ router.post("/live", function(req, res, next) {
             }
         }
 
-        serverState.save()
+        liveState.save()
         res.statusCode = 201
         res.end()
     })

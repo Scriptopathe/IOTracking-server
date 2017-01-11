@@ -9,7 +9,7 @@ import { ModelBase, Reference } from "../models/base"
 /**
  * Interface containing all the fields of a user object.
  */
-export interface ServerStateModel {
+export interface LiveStateModel {
     liveRegata : Reference<Regatta>
     liveRaceId : number
 } 
@@ -17,7 +17,7 @@ export interface ServerStateModel {
 /**
  * Database model implementation of the RaceModel object.
  */
-export class ServerState extends ModelBase<ServerStateModel> implements ServerStateModel {
+export class LiveState extends ModelBase<LiveStateModel> implements LiveStateModel {
     public static collectionName : string = "serverstate"
     public static schema : Schema = new Schema({
         "liveRegata" : new properties.ReferenceProperty(),
@@ -27,23 +27,23 @@ export class ServerState extends ModelBase<ServerStateModel> implements ServerSt
     public liveRegata : Reference<Regatta>
     public liveRaceId : number
 
-    public constructor(private db : monk.Monk, user? : ServerStateModel) 
+    public constructor(private db : monk.Monk, user? : LiveStateModel) 
     {
-        super(db.get(ServerState.collectionName), ServerState.schema, user)
+        super(db.get(LiveState.collectionName), LiveState.schema, user)
     }
 
     /** 
-     * Loads a model ServerState from the database.
+     * Loads a model LiveState from the database.
      * @param needle used to query the database. See mongo db documentation for details.
      * @param db database instance to use to load the model.
      * @param done callback executed once the loading has been performed.
      */
-    public static findOne(db : monk.Monk, needle : any, done : (x : ServerState)  => void) : void {
-        var col : monk.Collection = db.get(ServerState.collectionName)
-        this.findAndWrap<ServerStateModel, ServerState>(
+    public static findOne(db : monk.Monk, needle : any, done : (x : LiveState)  => void) : void {
+        var col : monk.Collection = db.get(LiveState.collectionName)
+        this.findAndWrap<LiveStateModel, LiveState>(
             col, 
             needle,
-            (col, model) => { return new ServerState(db, model) },
+            (col, model) => { return new LiveState(db, model) },
             (items => { done(items[0]) })
         )
     }
@@ -58,13 +58,13 @@ export class ServerState extends ModelBase<ServerStateModel> implements ServerSt
     public static find(
             db : monk.Monk,
             needle : any, 
-            done : (obj : ServerState[])  => void) : void
+            done : (obj : LiveState[])  => void) : void
     {
-        let col  : monk.Collection = db.get(ServerState.collectionName)
-        this.findAndWrap<ServerStateModel, ServerState>(
+        let col  : monk.Collection = db.get(LiveState.collectionName)
+        this.findAndWrap<LiveStateModel, LiveState>(
             col, 
             needle, 
-            (col, model) => { return new ServerState(db, model) },
+            (col, model) => { return new LiveState(db, model) },
             done
         )
     }
@@ -73,7 +73,7 @@ export class ServerState extends ModelBase<ServerStateModel> implements ServerSt
      * Creates a dummy database.
      */
     public static createDummy(db : monk.Monk) : void {                      
-        var col : monk.Collection = db.get(ServerState.collectionName);
+        var col : monk.Collection = db.get(LiveState.collectionName);
         col.insert([
             
         ])
