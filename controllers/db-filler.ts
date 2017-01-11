@@ -151,6 +151,7 @@ function createRaceMaps(db : monk.Monk) : RaceMap[] {
     let raceMaps : RaceMap[] = []
     // Race maps
     let map = new RaceMap(db, {
+        name: "Map 01",
         eastLongReference: 10.0,
         westLongReference: 12.0,
         northLatReference: 35.0,

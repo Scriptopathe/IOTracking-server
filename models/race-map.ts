@@ -10,6 +10,7 @@ import { Schema } from "./schema/schema"
  * Interface containing all the fields of a race object.
  */
 export interface RaceMapModel {
+    name : string
     raceMapImageUrl : string
     northLatReference : number
     southLatReference : number
@@ -23,6 +24,7 @@ export interface RaceMapModel {
 export class RaceMap extends ModelBase<RaceMapModel> {
     public static collectionName : string = "racemaps"
     public static schema : Schema = new Schema({
+        "name" : new properties.StringProperty(),
         "raceMapImageUrl" : new properties.StringProperty(),
         "northLatReference" : new properties.FloatProperty(),
         "southLatReference" : new properties.FloatProperty(),
@@ -30,6 +32,7 @@ export class RaceMap extends ModelBase<RaceMapModel> {
         "westLongReference" : new properties.FloatProperty(),
     })
 
+    public name : string
     public raceMapImageUrl : string
     public northLatReference : number
     public southLatReference : number
