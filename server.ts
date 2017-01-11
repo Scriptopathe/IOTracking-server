@@ -7,6 +7,7 @@ import * as bodyparser from "body-parser"
 import * as rawrestapi from "./controllers/raw-rest-api"
 import * as dbfiller from "./controllers/db-filler"
 import * as serverstate from "./controllers/server-state"
+import * as buoyControler from "./controllers/buoy-controler"
 
 import { MQTTServer }   from "./mqtt/mqtt-server"
 
@@ -28,6 +29,7 @@ export class Server {
       this.app.use("/fill", dbfiller.router)
       this.app.use('/example', exampleCtrl.router)
       this.app.use('/api/state', serverstate.router)
+      this.app.use("/api/buoys", buoyControler.router)
       this.app.use('/api', rawrestapi.router)
       this.app.use(middleware404.router)
   }
