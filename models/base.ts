@@ -60,7 +60,7 @@ export abstract class ModelBase<Model>
     /** 
      * Saves the current object ot the database.
      */
-    public save() : void
+    public save(cb? : ((model : Model) => void)) : void
     {
         let data = {}
         ModelBase.wrapProperties(data, this, this._schema)
@@ -68,9 +68,12 @@ export abstract class ModelBase<Model>
         if (this._id == undefined) {
             (<any> this.col.insert(data)).then((doc : Model) => {
                 this._id = doc["_id"];
+                if(cb != null) { cb(doc) }
             })
         } else {
-            this.col.update({ _id : this["_id"] }, data)
+            (<any> this.col.update({ _id : this["_id"] }, data)).then((doc : Model) => {
+                if(cb != null) { cb(doc) }
+            })
         }
     }
 
@@ -99,8 +102,6 @@ export abstract class ModelBase<Model>
             options["sort"] = needle["$orderby"]
             delete filter["$orderby"]
         }
-        console.log(filter)
-        console.log(options)
         return {
             "filter" : filter,
             "options" : options

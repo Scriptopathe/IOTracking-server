@@ -64,9 +64,12 @@ export function restify(Type : Restifiable)
             }
         }
 
-        newobj.save()
-        res.statusCode = 201
-        res.end()
+        newobj.save((model : any) => {
+            newobj["_id"] = model["_id"]
+            res.statusCode = 201
+            res.write(newobj.stringify())
+            res.end()
+        })
     })
 
     r.put("/:identifier", function(req, res, next) {
