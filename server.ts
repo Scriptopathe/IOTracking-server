@@ -8,6 +8,7 @@ import * as rawrestapi from "./controllers/raw-rest-api"
 import * as dbfiller from "./controllers/db-filler"
 import * as serverstate from "./controllers/live-state"
 import * as buoyControler from "./controllers/buoy-controler"
+import * as uploadControler from "./controllers/upload-controler"
 
 import { MQTTServer }   from "./mqtt/mqtt-server"
 
@@ -26,7 +27,9 @@ export class Server {
   public configure() : void {
       this.app.use(bodyparser.text())
       this.app.use(middlewareDB.dbMiddleware)
+      this.app.use('/public', express.static('public'))
       this.app.use("/fill", dbfiller.router)
+      this.app.use("/api/upload/racemaps", uploadControler.router)
       this.app.use('/example', exampleCtrl.router)
       this.app.use('/api/state', serverstate.router)
       this.app.use("/api/buoys", buoyControler.router)
