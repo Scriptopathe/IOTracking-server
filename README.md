@@ -5,6 +5,7 @@ sudo apt-get install mongodb
 npm install -g typescript
 npm install -g tsd
 npm install -g node-dev 
+npm install -g ts-node
 ```
 
 sudo wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
