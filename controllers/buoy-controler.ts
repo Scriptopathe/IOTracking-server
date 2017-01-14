@@ -8,13 +8,6 @@ import { Race,
 
 let router = express.Router()
 
-router.use("/", function(req, res, next) {
-    res.setHeader("Access-Control-Allow-Origin", "*")
-    res.setHeader("Access-Control-Allow-Methods", "GET, DELETE, POST")
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
-    next()
-})
-
 router.put("/:regata/:race", function(req, res, next) {
     var db : monk.Monk = req["db"]
     let obj = JSON.parse(req.body)

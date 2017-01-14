@@ -1,10 +1,9 @@
-import * as modelbase from "../models/base"
-import * as express from "express"
-import * as monk from "monk"
-
-import { Schema } from "../models/schema/schema"
-import { ModelBase } from "../models/base"
-
+import * as modelbase                       from "../models/base"
+import * as express                         from "express"
+import * as monk                            from "monk"
+import { Schema }                           from "../models/schema/schema"
+import { ModelBase }                        from "../models/base"
+import { authenticate, authenticateRole }   from "../middlewares/authentication"
 export interface Restifiable
 {
     collectionName : string
@@ -31,15 +30,9 @@ export interface Restifiable
 export function restify(Type : Restifiable)
 {
     let r : express.Router = express.Router()
-    r.use(function(req, res, next) {
-        res.setHeader("Access-Control-Allow-Origin", "*")
-        res.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST")
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type")
-        res.setHeader("Access-Control-Expose-Headers", "X-IOTracking-Count")
-        next()
-    })
 
-    r.post("/", function(req, res, next) {
+    r.post("/", authenticateRole(["staff"]),
+    function(req : express.Request, res : express.Response, next : express.NextFunction) {
         let dataStr = req.body
         let x = JSON.parse(req.body)
         
@@ -61,7 +54,8 @@ export function restify(Type : Restifiable)
         })
     })
 
-    r.put("/:identifier", function(req, res, next) {
+    r.put("/:identifier", authenticateRole(["staff"]),
+    function(req : express.Request, res : express.Response, next : express.NextFunction) {
         let id = req.params["identifier"]
         let obj = JSON.parse(req.body)
         let updobj = Type.findAndWrap(
@@ -84,14 +78,14 @@ export function restify(Type : Restifiable)
                     res.end()
                 }
 
-                console.log("Before SAVE")
                 x.save()
                 res.end()
             }
         )
     })
 
-    r.get("/dummy", function(req, res, next) {
+    r.get("/dummy", 
+    function(req, res, next) {
         let unwrapped = Type.schema.unwrap(Type.schema.random())
         res.statusCode = 200
         res.setHeader("Content-Type", "application/json")
@@ -99,7 +93,8 @@ export function restify(Type : Restifiable)
         res.end()
     })
 
-    r.get("/count", function(req, res, next) {
+    r.get("/count", 
+    function(req, res, next) {
         Type.findAndWrap(
             req["db"].get(Type.collectionName), {},
             (col : any, model : any) => new (<any> Type)(req["db"], model),
@@ -110,7 +105,8 @@ export function restify(Type : Restifiable)
         )
     })
 
-    r.get("/", function(req, res, next) {
+    r.get("/", 
+    function(req, res, next) {
         let first = req.query["first"] == undefined ? 0 : Number(req.query["first"])
         let last = req.query["last"] == undefined ? -1 : Number(req.query["last"])
         let needle = req.query["needle"] == undefined ? {} : JSON.parse(req.query["needle"])
@@ -136,7 +132,8 @@ export function restify(Type : Restifiable)
     })
 
 
-    r.get("/:identifier", function(req, res, next) {
+    r.get("/:identifier", 
+    function(req, res, next) {
         let id = req.params["identifier"]
         Type.findAndWrap(
             req["db"].get(Type.collectionName), {_id : id},
@@ -157,7 +154,8 @@ export function restify(Type : Restifiable)
         )
     })
 
-    r.delete("/:identifier", function(req, res, next) {
+    r.delete("/:identifier", authenticateRole(["staff"]),
+    function(req : express.Request, res : express.Response, next : express.NextFunction) {
         let id = req.params["identifier"]
         
         Type.findAndWrap(

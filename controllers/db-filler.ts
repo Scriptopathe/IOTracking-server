@@ -21,7 +21,6 @@ let devicesCount = 20
 let bounds = 1024
 let buoysCount = 6
 
-
 function generateRandomTrajectory(checkpoints : Point[]) : TimePoint[] {
     // Points <=> [0, 1024] en x et y
     let ptsPerCheckpoint = 50
@@ -224,7 +223,7 @@ function createRegattas(db : monk.Monk,
             endDate: endDate,
             races: races
         })
-        
+
         regatta.saveAndCheck()
     }
 

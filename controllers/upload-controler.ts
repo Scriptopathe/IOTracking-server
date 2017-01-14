@@ -5,13 +5,6 @@ import * as restmaker from "../helpers/restify"
 var fileUpload = require('express-fileupload');
 
 let router = express.Router()
-
-router.use("", function(req, res, next) {
-    res.setHeader("Access-Control-Allow-Origin", "*")
-    res.setHeader("Access-Control-Allow-Methods", "GET, DELETE, POST")
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
-    next()
-})
  
 router.post("", fileUpload(), function(req, res) {
     console.dir(req.body)

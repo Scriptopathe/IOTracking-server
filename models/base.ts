@@ -202,7 +202,6 @@ export abstract class ModelBase<Model>
         let data = {}
         modelHelpers.copy(data, this, ["_id"])
         ModelBase.copyProperties(data, this, this._schema)
-        console.dir(data)
         return JSON.stringify(data)
     }
 

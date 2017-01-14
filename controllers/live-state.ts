@@ -5,13 +5,6 @@ import { LiveState,
 
 let router = express.Router()
 
-router.use("/live", function(req, res, next) {
-    res.setHeader("Access-Control-Allow-Origin", "*")
-    res.setHeader("Access-Control-Allow-Methods", "GET, DELETE, POST")
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
-    next()
-})
-
 router.get("/live", function(req, res, next) {
     var db : monk.Monk = req["db"]
 

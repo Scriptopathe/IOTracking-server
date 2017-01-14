@@ -9,42 +9,88 @@ import * as dbfiller from "./controllers/db-filler"
 import * as serverstate from "./controllers/live-state"
 import * as buoyControler from "./controllers/buoy-controler"
 import * as uploadControler from "./controllers/upload-controler"
+import * as monk                        from "monk"
+import * as jwt                         from "jsonwebtoken"
+import * as passport                    from "passport"
+import * as config                      from './config'
+import * as authcontroler               from './controllers/auth-controler'
+import { ExtractJwt, Strategy }         from 'passport-jwt'
+import { db }                           from './middlewares/database'
+import { User, UserModel }              from './models/user'
 
 import { MQTTServer }   from "./mqtt/mqtt-server"
-
 require('ts-node/register')
 
+
 export class Server {
-  public app: express.Application
-  public mqttServer : MQTTServer
+    public app: express.Application
+    public mqttServer : MQTTServer
 
-  constructor() {
-    this.app = express();
-    this.mqttServer = new MQTTServer()
-  }
+    constructor() {
+        this.app = express();
+        this.mqttServer = new MQTTServer()
+    }
 
-  /**
-   * Route and middleware configuration is performed here.
-   */
-  public configure() : void {
-      this.app.use(bodyparser.text())
-      this.app.use(middlewareDB.dbMiddleware)
-      this.app.use('/public', express.static('public'))
-      this.app.use("/fill", dbfiller.router)
-      this.app.use("/api/upload/racemaps", uploadControler.router)
-      this.app.use('/example', exampleCtrl.router)
-      this.app.use('/api/state', serverstate.router)
-      this.app.use("/api/buoys", buoyControler.router)
-      this.app.use('/api', rawrestapi.router)
-      this.app.use(middleware404.router)
-  }
+    /**
+     * Sets up authentication middleware.
+     */
+    setupAuth() {
+        var opts : any = {}
+        opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
+        opts.secretOrKey = config.jwtSecret
+        opts.passReqToCallback = true
+
+        passport.use(new Strategy(opts, 
+        function(req : express.Request, jwt_payload : any, done : any) {
+            User.findOne(db, { _id: jwt_payload.id }, function(user) {
+                if (user) {
+                    req.user = user
+                    done(null, user);
+                } else {
+                    done(null, false);        
+                }
+            });
+        }));
+    }
+
+    /**
+     * Configures the CORS access control policy.
+     */
+    setupAccessControl() {
+        this.app.use(function(req, res, next) {
+          res.setHeader("Access-Control-Allow-Origin", "*")
+          res.setHeader("Access-Control-Allow-Methods", "GET, PUT, DELETE, POST")
+          res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+          res.setHeader("Access-Control-Expose-Headers", "X-IOTracking-Count")
+          next()
+        })
+    }
+    /**
+     * Route and middleware configuration is performed here.
+     */
+    public configure() : void {
+        this.setupAuth()
+        this.setupAccessControl()
+
+        this.app.use(bodyparser.text())
+        this.app.use(middlewareDB.dbMiddleware)
+        this.app.use('/auth', authcontroler.router)
+        this.app.use('/public', express.static('public'))
+        this.app.use("/fill", dbfiller.router)
+        this.app.use("/api/upload/racemaps", uploadControler.router)
+        this.app.use('/example', exampleCtrl.router)
+        this.app.use('/api/state', serverstate.router)
+        this.app.use("/api/buoys", buoyControler.router)
+        this.app.use('/api', rawrestapi.router)
+        this.app.use(middleware404.router)
+    }
 
 
-  public run() : void {
-      this.configure()
-      this.mqttServer.start()
-      this.app.listen(3001)
-  }
+    public run() : void {
+        this.configure()
+        this.mqttServer.start()
+        this.app.listen(3001)
+    }
 }
 
 
