@@ -11,25 +11,38 @@ function randomStr() {
     return "string#" + randomInt(1000)
 }
 
+function getStackTrace() : string[] {
+  var stack : any;
+
+  try {
+    throw new Error('');
+  }
+  catch (error) {
+    stack = error.stack || '';
+  }
+
+  stack = stack.split('\n')
+  return stack.splice(stack[0] == 'Error' ? 2 : 1);
+}
 
 /* ==================================================================================
  * Base classes
  * ================================================================================*/
 export class Property
 {
-    /**
-     * Object -> JSON / DB / API
-     * Wraps the value to a format that can be put in a JSON file 
-     * (for database and API)
-     */
-    public wrap(value : any) : any 
-    {
-        return value 
+    public static DEBUG = false
+
+    /** Set by the schema. */
+    public name : string = ""
+
+    protected error(str : string) : any {
+        throw new Error(str)
     }
 
     /**
-     * JSON / DB / API -> Object
-     * Unwraps the value from a JSON value to the type T.
+     * Check and converts value to internal storage format.
+     *  
+     * Unwraps the value from a JSON value to the type T. ty
      * If the value is already of the type T, it MUST BE returned as is.
      * e.g:
      *          unwrap(unwrap(data)) = unwrap(data)
@@ -38,8 +51,18 @@ export class Property
      * 
      * @returns the converted value if the import succeeded, undefined otherwise.
      */
-    public unwrap(obj : any) : any | undefined 
+    public unwrap(obj : any, depth : number = 0) : any 
     {
+        if(Property.DEBUG) {
+            var spaces = "                                                                                                 "
+            var trace = getStackTrace()
+            var className = trace[0].split('.unwrap')[0].split('.Property')[0]
+            var prop = " | " + this.name + " = " + typeof(obj) + " {" + obj + "}"
+            var tabs = spaces.slice(0, depth)
+
+            console.log((depth +" " + tabs + className + spaces).slice(0, 50) + prop)
+        }
+
         return obj
     }
 
@@ -48,29 +71,26 @@ export class Property
     }
 }
 
-export class Schema
+export class Schema extends Property
 {
-    constructor(public properties : { [name : string] : Property }) { }
-
-    public wrap(value : any) {
-        let wrapped = {}
-        for(let key in this.properties) {
-            wrapped[key] = this.properties[key].wrap(value[key]) 
-        }
-        return wrapped
+    constructor(public properties : { [name : string] : Property }) { 
+        super()
     }
 
-    public unwrap(value : any) {
-        console.log("unwrapp " + JSON.stringify(value))
+    public unwrap(value : any, depth : number = 0) : any {
+        super.unwrap(value, depth)
         let unwrapped = {}
         for(let key in this.properties) {
             if(!(key in value)) { 
-                return undefined
+                return this.error("Missing property '" + key + "'")
             }
-            unwrapped[key] = this.properties[key].unwrap(value[key])
-        }
+            this.properties[key].name = this.name + "." + key
 
-        console.log("unwrapped " + JSON.stringify(unwrapped))
+            unwrapped[key] = this.properties[key].unwrap(value[key], depth+1)
+            if(unwrapped[key] == undefined) {
+                return this.error("Bad format for '" + key + "'")
+            }
+        }
         return unwrapped
     }
 
@@ -93,15 +113,14 @@ export class ObjectProperty<T> extends Property {
         super()
     }
 
-    public wrap(value : T) {
-        return value
-    }
+    public unwrap(obj : T | string, depth : number = 0) {
+        super.unwrap(obj, depth)
 
-    public unwrap(obj : T | string) {
+        this.schema.name = this.name
         if(typeof obj === "string")
-            return JSON.parse(obj)
+            return this.schema.unwrap(JSON.parse(obj), depth+1)
         
-        return obj
+        return this.schema.unwrap(obj, depth+1)
     }
 
     public random() : any {
@@ -114,22 +133,18 @@ export class MapProperty<TKey, TValue> extends Property {
         super()
     }
 
-    public wrap(value : any) {
-        var wrapped = {}
-        for(let key in value) {
-            let wKey = this.keyProperty.wrap(key)
-            wrapped[wKey] = this.valueProperty.wrap(value[key])
-        }
-        return value
-    }
-
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         var unwrapped = {}
         for(let key in obj) {
-            let uwKey = this.keyProperty.unwrap(key)
-            let uwValue = this.valueProperty.unwrap(obj[key])
+            this.keyProperty.name = this.name + "#key"
+            this.valueProperty.name = this.name + "[key]"
+
+            let uwKey = this.keyProperty.unwrap(key, depth+1)
+            let uwValue = this.valueProperty.unwrap(obj[key], depth+1)
+
             if(uwKey == undefined || uwValue == undefined)
-                return undefined
+                return this.error("Bad key or value for '" + key + "'")
             
             unwrapped[uwKey] = uwValue
         }
@@ -151,25 +166,25 @@ export class ArrayProperty<T> extends Property {
         super()
     }
 
-    public wrap(value : T[]) {
-        if(! (value instanceof(Array))) {
-            console.dir(value)
-            throw new Error("ArrayProperty.wrap wrapped value is not an array")
-        }
-        
-        let array = value.map((value, index, array) => { return this.items.wrap(value) })
-        return array
-    }
-
-    public unwrap(obj : any[]) {
+    public unwrap(obj : any[], depth : number = 0) {
+        super.unwrap(obj, depth)
         if(obj == undefined)
             return []
         
         if(! (obj instanceof(Array))) {
-            return undefined
+            return this.error("Not an array")
         }
         
-        let array = obj.map((value, index, array) => { return this.items.unwrap(value) })
+        let array : any[] = []
+        for(let i in obj) {
+            this.items.name = this.name + "[" + i + "]"
+            let value = obj[i]
+            let unwraped = this.items.unwrap(value, depth+1)
+            if(unwraped == undefined)
+                return this.error("Incorrect value for item " + value)
+            array.push(unwraped)
+        }
+
         return array
     }
 
@@ -194,20 +209,18 @@ export interface TimePoint
 } 
 
 export class PointProperty extends Property {
-    public wrap(value : Point) {
-        return value.x + ";" + value.y
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         if(typeof obj === "string") {
             var xy = obj.split(';').map((value) => Number(value))
             if(xy.length != 2)
-                return undefined
+                return this.error("bad format")
             return { x: xy[0], y: xy[1] }
         } else if (obj["x"] != undefined && obj["y"] != undefined) {
             return obj
         } else {
-            return undefined
+            return this.error("bad Point format")
         }
     }
 
@@ -217,22 +230,20 @@ export class PointProperty extends Property {
 }
 
 export class TimePointProperty extends Property {
-    public wrap(value : TimePoint) {
-        return value.x + ";" + value.y + ";" + value.t
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         if(typeof obj === "string") {
             var xyz = obj.split(';').map((value) => Number(value))
             if(xyz.length != 3)
-                return undefined
+                return this.error("bad TimePoint format")
             return { x: xyz[0], y: xyz[1], t : xyz[2] }
         } else if (obj["x"] != undefined &&
                    obj["y"] != undefined && 
                    obj["t"] != undefined) {
             return obj
         } else {
-            return undefined
+            return this.error("bad TimePoint format")
         }
     }
 
@@ -247,11 +258,9 @@ export class TimePointProperty extends Property {
  * Simple properties
  * ================================================================================*/
 export class StringProperty extends Property {
-    public wrap(value : string) {
-        return value
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         return String(obj)
     }
 
@@ -265,14 +274,11 @@ export class StringEnumProperty extends Property {
         super()
     }
 
-    public wrap(value : string) {    
-        return value
-    }
-
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         if(this.values.indexOf(obj) != -1)
             return String(obj)
-        return undefined
+        return this.error("Incorrect enum value" + obj)
     }
 
     public random() : string {
@@ -287,14 +293,12 @@ export class ReferenceProperty extends StringProperty {
 }
 
 export class IntegerProperty extends Property {
-    public wrap(value : number) {
-        return value
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         let num = parseInt(obj)
         if (isNaN(num))
-            return undefined
+            return this.error("Incorrect integer value " + num)
         return num
     }
 
@@ -304,14 +308,12 @@ export class IntegerProperty extends Property {
 }
 
 export class FloatProperty extends Property {
-    public wrap(value : number) {
-        return value
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         let num = parseFloat(obj)
         if (isNaN(num))
-            return undefined
+            return this.error("Incorrect numeric value " + num)
         return num
     }
 
@@ -321,11 +323,9 @@ export class FloatProperty extends Property {
 }
 
 export class BoolProperty extends Property {
-    public wrap(value : boolean) {
-        return value
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
         let num = Boolean(obj)
         return num
     }
@@ -336,46 +336,35 @@ export class BoolProperty extends Property {
 }
 
 export class DateProperty extends Property {
-    public wrap(value : Date) {
-        return this.unwrap(value).getTime()
-    }
 
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
+        super.unwrap(obj, depth)
+
         if(obj == undefined)
-            return new Date()
+            return new Date().getTime()
         
-        if(typeof(obj) == "number") {
-            var date = new Date()
-            date.setTime(obj)
-            return date
+        let timestamp = parseInt(obj)
+        if(!isNaN(timestamp)) {
+            return timestamp
         } else if(obj instanceof(Date)) {
-            return <Date> obj
+            return obj.getTime()
         } else {
             let date = new Date(obj)
             if (isNaN(date.getTime()))
-                return undefined
+                return this.error("Incorrect date value '" + date + "'")
                 
-            return date
+            return date.getTime()
         }
     }
 
     public random() {
-        return new Date()
+        return new Date().getTime()
     }
 }
 
 export class TestProperty extends Property {
-    // DB and JSON => "LULZ + 1000"
-    // Internally : 1000
 
-    public wrap(value : number) {
-        if(value == undefined)
-            return "LULZ + 0"
-
-        return "LULZ + " + value
-    }
-
-    public unwrap(obj : any) {
+    public unwrap(obj : any, depth : number = 0) {
         // Good format
         if(typeof(obj) == "string") {
             let arr : string[] = obj.split("LULZ +")
@@ -391,6 +380,6 @@ export class TestProperty extends Property {
     }
 
     public random() {
-        return this.wrap(randomInt(1000))
+        return randomInt(1000)
     }
 }

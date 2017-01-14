@@ -1,5 +1,4 @@
 import * as mqtt            from 'mqtt'
-
 import { db }               from '../middlewares/database'
 import { Regatta }          from '../models/regata'
 import { RaceModel }        from '../models/race'

@@ -12,6 +12,8 @@ import * as uploadControler from "./controllers/upload-controler"
 
 import { MQTTServer }   from "./mqtt/mqtt-server"
 
+require('ts-node/register')
+
 export class Server {
   public app: express.Application
   public mqttServer : MQTTServer

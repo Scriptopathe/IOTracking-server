@@ -3,6 +3,7 @@ import * as express from "express"
 import * as monk from "monk"
 
 import { Schema } from "../models/schema/schema"
+import { ModelBase } from "../models/base"
 
 export interface Restifiable
 {
@@ -44,24 +45,12 @@ export function restify(Type : Restifiable)
         
         let newobj  = new (<any> Type)(req["db"])
 
-        // Check if all properties contained
-        for(let prop of newobj.properties)
-        {
-            if (!(prop in x)) {
-                res.statusCode = 400
-                res.statusMessage = "Bad object format : missing property " + prop 
-                res.end()
-                return
-            }
-
-            newobj[prop] = newobj.schema.properties[prop].unwrap(x[prop])
-
-            if(newobj[prop] == undefined) {
-                res.statusCode = 400
-                res.statusMessage = "Property " + prop + " has incorrect value"
-                res.end()
-                return
-            }
+        try {
+            ModelBase.unwrapProperties(newobj, x, Type.schema)
+        } catch(e) {
+            res.statusCode = 400
+            res.statusMessage = "Bad object format. Error : " + e
+            res.end()
         }
 
         newobj.save((model : any) => {
@@ -87,26 +76,15 @@ export function restify(Type : Restifiable)
                     return
                 }
 
-                // Check if all properties contained
-                for(let prop in Type.schema.properties)
-                {
-                    if (!(prop in obj)) {
-                        res.statusCode = 400
-                        res.statusMessage = "Bad object format : missing property " + prop
-                        res.end()
-                        return
-                    }
-
-                    x[prop] = Type.schema.properties[prop].unwrap(obj[prop])
-
-                    if(x[prop] == undefined) {
-                        res.statusCode = 400
-                        res.statusMessage = "Property " + prop + " has incorrect value"
-                        res.end()
-                        return
-                    }
+                try {
+                    ModelBase.unwrapProperties(x, obj, Type.schema) 
+                } catch(e) {
+                    res.statusCode = 400
+                    res.statusMessage = "Bad object format. Error : " + e
+                    res.end()
                 }
 
+                console.log("Before SAVE")
                 x.save()
                 res.end()
             }

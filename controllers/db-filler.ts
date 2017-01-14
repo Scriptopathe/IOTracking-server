@@ -85,7 +85,7 @@ function createDevices(db : monk.Monk) : Device[] {
             batteryLevel: Math.ceil((Math.random() * 100)),
             isActive: Math.random() > 0.5
         })
-        device.saveAndWait()
+        device.saveAndCheck()
         devices.push(device)
     }
     console.log("Devices created")
@@ -102,7 +102,7 @@ function createUsers(db : monk.Monk) : User[] {
             role: Role.staff
         })
 
-        user.saveAndWait()
+        user.saveAndCheck()
         users.push(user)
     }
     console.log("Users created.")
@@ -140,7 +140,7 @@ function createRaceData(db : monk.Monk, devices : Device[], buoys : Point[][]) :
             rawData: raw
         })
 
-        data.saveAndWait()
+        data.save()
         raceData.push(data)
     }
     console.log("Race data created.")
@@ -152,13 +152,13 @@ function createRaceMaps(db : monk.Monk) : RaceMap[] {
     // Race maps
     let map = new RaceMap(db, {
         name: "Map 01",
-        eastLongReference: 10.0,
-        westLongReference: 12.0,
-        northLatReference: 35.0,
-        southLatReference: 37.0,
+        eastLongReference: 1.985608,
+        westLongReference: 1.926195,
+        northLatReference: 42.9945049 ,
+        southLatReference: 42.9596679, //42.9596679,1.985608
         raceMapImageUrl: "lake-montbel.png"
     })
-    map.saveAndWait()
+    map.saveAndCheck()
     raceMaps.push(map)
     console.log("Race maps created.")
     return raceMaps
@@ -224,8 +224,8 @@ function createRegattas(db : monk.Monk,
             endDate: endDate,
             races: races
         })
-
-        regatta.saveAndWait()
+        
+        regatta.saveAndCheck()
     }
 
     console.log("CREATED : Regattas")    

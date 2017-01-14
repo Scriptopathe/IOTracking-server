@@ -44,7 +44,7 @@ export abstract class ModelBase<Model>
         }
 
         if(model != undefined)
-            ModelBase.unwrapProperties(this, model, this._schema)
+            ModelBase.copyProperties(this, model, this._schema)
     }
 
     /**
@@ -60,10 +60,20 @@ export abstract class ModelBase<Model>
     /** 
      * Saves the current object ot the database.
      */
-    public save(cb? : ((model : Model) => void)) : void
+    private _save(check : boolean, cb? : ((model : Model) => void)) : void
     {
         let data = {}
-        ModelBase.wrapProperties(data, this, this._schema)
+        try {
+            if(check) {
+                ModelBase.unwrapProperties(data, this, this._schema)
+            } else {
+                ModelBase.copyProperties(data, this, this._schema)
+            }
+        } catch(e) {
+            console.log("Error in save.")
+            console.trace(e)
+            return
+        }
 
         if (this._id == undefined) {
             (<any> this.col.insert(data)).then((doc : Model) => {
@@ -77,6 +87,24 @@ export abstract class ModelBase<Model>
         }
     }
 
+    /**
+     * Saves the model after checking it.
+     * Can throw an exception if the model is not valid.
+     */
+    public saveAndCheck(cb? :  ((model : Model) => void)) {
+        this._save(true, cb)
+    }
+
+    /**
+     * Saves the model using the fast method without prior checks.
+     */
+    public save(cb? :  ((model : Model) => void)) {
+        this._save(false, cb)
+    }
+
+    /**
+     * Deprecated.
+     */
     public saveAndWait() {
         this.save()
     }
@@ -173,34 +201,27 @@ export abstract class ModelBase<Model>
     public stringify() : string {
         let data = {}
         modelHelpers.copy(data, this, ["_id"])
-        ModelBase.wrapProperties(data, this, this._schema)
+        ModelBase.copyProperties(data, this, this._schema)
+        console.dir(data)
         return JSON.stringify(data)
     }
 
-
     /**
-     * JSON / DB / API -> Object
-     * Unwraps the properties contained in the given schema value from the source 
-     * object to the destination object.
+     * Copy the properties of the given schema from src to dst.
      * */
-    private static unwrapProperties(dst : any, src : any, schema : Schema) {
+    public static copyProperties(dst : any, src : any, schema : Schema) {
         for(let key in schema.properties) {
-            //console.log("wrap[" + key + "]\n\tsrc = " + JSON.stringify(src[key]))
-            dst[key] = schema.properties[key].unwrap(src[key])
-            //console.log("\t dst = " + JSON.stringify(dst[key]))
+            dst[key] = src[key]
         }
     }
 
     /**
-     * Object -> JSON / DB / API
-     * Wraps the properties contained in the given schema value from the source 
+     * Unwraps the properties contained in the given schema value from the source 
      * object to the destination object.
      * */
-    private static wrapProperties(dst : any, src : any, schema : Schema) {
+    public static unwrapProperties(dst : any, src : any, schema : Schema) {
         for(let key in schema.properties) {
-            //console.log("wrap[" + key + "]\n\tsrc = " + JSON.stringify(src[key]))
-            dst[key] = schema.properties[key].wrap(src[key])
-            //console.log("\tdst = " + JSON.stringify(dst[key]))
+            dst[key] = schema.properties[key].unwrap(src[key])
         }
     }
 
