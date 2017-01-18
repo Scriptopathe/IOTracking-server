@@ -8,7 +8,7 @@ import { db }                           from './database'
 import { User, UserModel }              from '../models/user'
 
 function authenticate() {
-    if(config.noLogin) { return [] }
+    if(config.bypassAuth) { return [] }
 
     return [
         passport.authorize('jwt', { session: false })
@@ -16,7 +16,7 @@ function authenticate() {
 }
 
 function authenticateRole(roles : string[]) {
-    if(config.noLogin) { return [] }
+    if(config.bypassAuth) { return [] }
     
     return [
         passport.authorize('jwt', { session: false }),

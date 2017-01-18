@@ -89,7 +89,7 @@ export class Server {
     public run() : void {
         this.configure()
         this.mqttServer.start()
-        this.app.listen(3001)
+        this.app.listen(config.listenPort)
     }
 }
 

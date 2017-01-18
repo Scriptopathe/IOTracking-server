@@ -1,11 +1,12 @@
 import * as mqtt            from 'mqtt'
+import * as config          from '../config'
 import { db }               from '../middlewares/database'
 import { Regatta }          from '../models/regata'
 import { RaceModel }        from '../models/race'
 import { RaceData }         from '../models/race-data'
 import { Racer }            from '../models/racer'
 import { Device }           from '../models/device'
-import { LiveState }      from '../models/live-state'
+import { LiveState }        from '../models/live-state'
 import { TimePoint }        from '../models/schema/property'
 
 interface MessageContent {
@@ -29,14 +30,15 @@ interface LoraRXMessage {
   data : string 
 }
 
-var TOPIC = "application/lulz"
+var TOPIC = "gateway/#"
 
 export class MQTTServer
 {
   client : mqtt.Client
-
+  remoteServer : string
   constructor() {
-    this.client  = mqtt.connect('mqtt://127.0.0.1')
+    this.remoteServer = config.loraMqttBrokerUrl
+    this.client  = mqtt.connect(this.remoteServer)
   }
 
   decodeb64(msg : string) : MessageContent {
@@ -82,7 +84,7 @@ export class MQTTServer
     }
   }
   decode(msg : string) : MessageContent {
-    this.decodeb64(msg)
+    // this.decodeb64(msg)
 
     let values =  msg.split(';').map((value) => parseInt(value))
     return {
@@ -93,13 +95,16 @@ export class MQTTServer
   }
 
   start() {
+    console.log("MQTT client connected to " + this.remoteServer)
+
     var self = this
     this.client.on('connect', function () {
+      console.log("MQTT client subscribe to " + TOPIC)
       self.client.subscribe(TOPIC)
     })
 
     this.client.on('message', function (topic : string, messageBuffer : Buffer) {
-      console.log("Received message !")
+      console.log("Received message ! ")
       var message = messageBuffer.toString()
       var loraMessage : LoraRXMessage
       try {
