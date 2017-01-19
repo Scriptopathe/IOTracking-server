@@ -14,4 +14,6 @@ export var listenPort = "3001"
  * URL of the lora mqtt broken.
  * Example : mqtt://127.0.0.1 
  * */
-export var loraMqttBrokerUrl = "mqtt://127.0.0.1"
+export var loraTopic = "gateway/#"
+export var loraMqttBrokerUrl = "mqtt:192.168.43.231"
+// export var loraMqttBrokerUrl = "mqtt://127.0.0.1" //mqtt:192.168.43.231"
