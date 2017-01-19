@@ -15,13 +15,13 @@ export class ConcurrentModel { }
  * Interface containing all the fields of a race object.
  */
 export interface RaceModel {
-    startDate : Date
-    endDate : Date
-    concurrents : Array<RacerModel>
-    map : Reference<RaceMap>
-    data : Reference<RaceData>
-    buoys : Array<Point>
-    name : string
+    startDate       : Date
+    endDate         : Date
+    concurrents     : Array<RacerModel>
+    map             : Reference<RaceMap>
+    data            : Reference<RaceData>
+    buoys           : Array<Point>
+    name            : string
 }
 
 /**

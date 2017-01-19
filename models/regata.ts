@@ -24,11 +24,11 @@ export interface RegattaModel {
 export class Regatta extends ModelBase<RegattaModel> {
     public static collectionName : string = "regattas"
     public static schema : Schema = new Schema({
-        "startDate" : new properties.DateProperty(),
-        "endDate" : new properties.DateProperty(),
-        "races" : new properties.ArrayProperty(new properties.ObjectProperty<Race>(Race.schema)),
-        "location" : new properties.StringProperty(),
-        "name"     : new properties.StringProperty() 
+        "startDate"         : new properties.DateProperty(),
+        "endDate"           : new properties.DateProperty(),
+        "races"             : new properties.ArrayProperty(new properties.ObjectProperty<Race>(Race.schema)),
+        "location"          : new properties.StringProperty(),
+        "name"              : new properties.StringProperty() 
     })
 
     public startDate : Date

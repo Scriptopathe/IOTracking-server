@@ -42,7 +42,7 @@ export class MQTTServer
   }
 
   decodeb64(msg : string) : MessageContent {
-    let x = 50
+    /*let x = 50
     let y = 80
     let bat = 14
     let data = (x & 0x03FF) | ((y & 0x3FF) << 10) | ((bat & 0xF) << 20);
@@ -57,41 +57,34 @@ export class MQTTServer
     console.log("The number " + data)
     
     let encoded = new Buffer(bytes).toString("base64")
-    console.log("Encoded : " + encoded)
+    
+    console.log("Encoded : " + encoded)*/
 
-    let decoded = new Buffer(encoded, "base64")
-    
-    
+    let decoded = new Buffer(msg, "base64")
     var number = 0
     var byteNumbers = new Array(decoded.length);
     for (var i = 0; i < decoded.length; i++) {
       byteNumbers[i] = decoded.readUInt8(i);
-      console.log("byte[" + i + "] = " + byteNumbers[i])
+      //console.log("byte[" + i + "] = " + byteNumbers[i])
       number |= byteNumbers[i] << (8 * i)
     }
 
     
-    console.log("The decoded number " + number)
+    // console.log("The decoded number " + number)
     let newX = number & 0x03FF
     let newY = (number >> 10) & 0x03FF
     let newBat = (number >> 20) & 0xF
-    console.log("x, y, bat = " + newX + " - " + newY + " - " + newBat)
+    // console.log("x, y, bat = " + newX + " - " + newY + " - " + newBat)
 
     return {
-      x: 0,
-      y: 0,
-      batteryLevel: 0
+      x: newX,
+      y: newY,
+      batteryLevel: newBat
     }
   }
-  decode(msg : string) : MessageContent {
-    // this.decodeb64(msg)
 
-    let values =  msg.split(';').map((value) => parseInt(value))
-    return {
-      x: values[0],
-      y: values[1],
-      batteryLevel : values[3]
-    }
+  decode(msg : string) : MessageContent {
+    return this.decodeb64(msg)
   }
 
   start() {
@@ -104,7 +97,7 @@ export class MQTTServer
     })
 
     this.client.on('message', function (topic : string, messageBuffer : Buffer) {
-      console.log("Received message ! ")
+      //console.log("Received message ! ")
       var message = messageBuffer.toString()
       var loraMessage : LoraRXMessage
       try {
@@ -124,7 +117,7 @@ export class MQTTServer
         return
       }
 
-      let t : number = new Date(loraMessage.rxInfo[0].time).getTime()
+      let t : number = new Date(loraMessage.rxInfo[0].time).getTime() / 1000.0
       let x : number = messageContent.x
       let y : number = messageContent.y
 
@@ -150,6 +143,8 @@ export class MQTTServer
 
               // Find regatta racedata
               var race : RaceModel = objs[0].races[raceId]
+              var concurrentsDevices : string[] = race.concurrents.map((racer) => String(racer.device) )
+
               RaceData.findAndWrap(db.get(RaceData.collectionName), { "_id" : race.data },
                 (col, model) => new RaceData(db, <any>model),
                 (objs : RaceData[]) => {
@@ -168,23 +163,30 @@ export class MQTTServer
                         return
                       }
                       var device : Device = objs[0]
+                      let deviceId = String(device.identifier)
 
                       device.batteryLevel = messageContent.batteryLevel
                       var data = {
                         x: x, y: y, t: t
                       }
 
-                      if(!(<string>device.identifier in raceData.rawData)) {
+                      // Checks that the device is in the race.
+                      if(concurrentsDevices.indexOf(deviceId) < 0) {
                         console.error("Device " + device.name + " not in race ")
                         return
-                        // raceData.rawData[<string>device.identifier] = []
                       }
 
+                      // Create the array if it does no exists.
+                      if(raceData.rawData[deviceId] == null) {
+                        raceData.rawData[deviceId] = []
+                      }
+
+                      // Pushes the data !
                       raceData.rawData[<string>device.identifier].push(data)
 
                       device.save()
                       raceData.save()
-                      console.log("Message processed successfully")
+                      //console.log("Message processed successfully")
                     }
                   )
                 }
