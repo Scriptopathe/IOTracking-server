@@ -77,11 +77,13 @@ export abstract class ModelBase<Model>
 
         if (this._id == undefined) {
             (<any> this.col.insert(data)).then((doc : Model) => {
+                this.afterCreate()
                 this._id = doc["_id"];
                 if(cb != null) { cb(doc) }
             })
         } else {
             (<any> this.col.update({ _id : this["_id"] }, data)).then((doc : Model) => {
+                this.afterUpdate()
                 if(cb != null) { cb(doc) }
             })
         }
@@ -115,9 +117,11 @@ export abstract class ModelBase<Model>
     public delete() : void
     {
         if(this._id == undefined)
-            throw new Error("This instance does not exist in the database. Can't remove it.")
+            throw new Error("This instance does not exist in the database. Can't remove it.");
 
-        this.col.removeById(this._id)
+        (<any> this.col.removeById(this._id)).then((doc : Model) => {
+            this.afterDelete()
+        });
     }
     
     /**
@@ -233,5 +237,29 @@ export abstract class ModelBase<Model>
             props[key] = new Property()
         }
         return new Schema(props)
+    }
+
+    /* ---------------------------------------------------------------------------------
+     * CALLBACKS
+     * -------------------------------------------------------------------------------*/
+
+    /**
+     * Called after the item is created.
+     */
+    protected afterCreate() {
+        return true
+    }
+    /**
+     * Called after the item is updated.
+     */
+    protected afterUpdate() {
+        return true
+    }
+
+    /**
+     * Called after the item is deleted.
+     */
+    protected afterDelete() {
+        return true
     }
 }

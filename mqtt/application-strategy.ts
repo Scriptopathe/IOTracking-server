@@ -1,18 +1,16 @@
 import { MessageContent, ApplicationMessage }       from "./mqtt-server-types"
 import { ParsingStrategy }                          from "./parsing-strategy"
 
-interface LoraRXInfo {
-  mac: string
-  time : string
-  rssi : number
-  loRaSNR: number
-}
-
 interface LoraRXMessage {
   // id of the device
   devEUI : string
-  // rx info from gateways
-  rxInfo : LoraRXInfo[]
+  
+  // rssi
+  rssi : number
+
+  // time
+  time : string
+  
   // base64 encoded data
   data : string
 }
@@ -48,7 +46,7 @@ export class ApplicationParsingStrategy implements ParsingStrategy {
       var loraMessage : LoraRXMessage
       try {
          loraMessage = JSON.parse(message)
-         return loraMessage.data && loraMessage.devEUI && loraMessage.rxInfo && loraMessage
+         return loraMessage.data && loraMessage.devEUI && loraMessage.time && loraMessage
       } catch(e) {
         console.error("Message : " + message)
         console.error("Bad message format. " + e)
@@ -74,9 +72,12 @@ export class ApplicationParsingStrategy implements ParsingStrategy {
       var messageContent : MessageContent = this.extractMessage(loraMessage)
       if(!messageContent) return
       
+      // sometimes the rx time is not valid.
+      let invalidTime = new Date(loraMessage.time).getFullYear() < 2000
+
       var applicationMessage : ApplicationMessage = {
         content: messageContent,
-        time : loraMessage.rxInfo[0].time,
+        time   : invalidTime ? new Date().toString() : loraMessage.time,
         devEUI : loraMessage.devEUI
       }
 

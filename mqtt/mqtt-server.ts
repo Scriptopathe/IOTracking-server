@@ -28,7 +28,8 @@ export class MQTTServer
     var byteNumbers = new Array(decoded.length);
     for (var i = 0; i < decoded.length; i++) {
       byteNumbers[i] = decoded.readUInt8(i)
-      console.log("byte[" + i + "] = " + byteNumbers[i])
+      let char = String.fromCharCode(byteNumbers[i])
+      console.log("byte[" + i + "] = " + byteNumbers[i] + "(" + char + ")")
     }
   }
 
@@ -87,6 +88,8 @@ export class MQTTServer
                     let deviceId = String(device.identifier)
 
                     device.batteryLevel = messageContent.batteryLevel
+                    device.lastActivity = new Date(messageContent.time)
+
                     var data = {
                       x: x, y: y, t: t
                     }
@@ -105,7 +108,7 @@ export class MQTTServer
                     // Pushes the data !
                     raceData.rawData[<string>device.identifier].push(data)
 
-                    device.save()
+                    device.saveAndCheck()
                     raceData.save()
                     console.log("Message processed successfully")
                   }
@@ -120,27 +123,40 @@ export class MQTTServer
 
 
   start() {
-    console.log("MQTT client connected to " + this.remoteServer)
+    console.log("[MQTT client] connected to " + this.remoteServer)
 
     var self = this
     this.client.on('connect', function () {
-      console.log("MQTT client subscribe to " + config.loraTopic)
+      console.log("[MQTT client] subscribe to " + config.loraTopic)
       self.client.subscribe(config.loraTopic)
     })
     
-    var strategy = new GatewayParsingStrategy()
+    var strategy : ParsingStrategy
+    
+    // Auto config
+    if(config.loraTopic.indexOf("gateway") >= 0) { 
+      console.log("[MQTT Client] Using GatewayParsingStrategy")
+      strategy = new GatewayParsingStrategy()
+    }
+    else {
+      console.log("[MQTT Client] Using ApplicationParsingStrategy")
+      strategy = new ApplicationParsingStrategy()
+    }
+
     this.client.on('message', function (topic : string, messageBuffer : Buffer) {
       //console.log("Received message ! ")
       var message = messageBuffer.toString()
-      console.log(message)
+      console.log("topic: " + topic + " | " + message)
       
       var lulz = JSON.parse(message)
-      if(lulz.phyPayload) {
+      if(lulz.data) {
         // to, from, id, flag == tx header
-        self.printBytes(lulz.phyPayload)
+        self.printBytes(lulz.data)
       }
 
-      self.processMessage(strategy.parse(message))
+      let parsedMessage = strategy.parse(message)
+      console.log("Parsed : " + JSON.stringify(parsedMessage))
+      self.processMessage(parsedMessage)
     })
   }
 }

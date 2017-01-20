@@ -82,7 +82,7 @@ function createDevices(db : monk.Monk) : Device[] {
             hwid: uuid(),
             name: "DEV-" + i,
             batteryLevel: Math.ceil((Math.random() * 100)),
-            isActive: Math.random() > 0.5
+            lastActivity: new Date()
         })
         device.saveAndCheck()
         devices.push(device)

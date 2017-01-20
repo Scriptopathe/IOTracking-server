@@ -1,16 +1,18 @@
-import * as monk from "monk"
-import * as promise from "../helpers/model"
-import * as properties from "./schema/property"
-import { ModelBase } from "../models/base"
-import { Schema } from "./schema/schema"
+import * as monk                from "monk"
+import * as promise             from "../helpers/model"
+import * as properties          from "./schema/property"
+import * as config              from "../config"
+import { ModelBase }            from "../models/base"
+import { Schema }               from "./schema/schema"
+
 /**
  * Interface containing all the fields of a device object.
  */
 export interface DeviceModel {
-    hwid : string
+    hwid : string // lora devEUI
     name : string
     batteryLevel : number
-    isActive : boolean
+    lastActivity : Date
 }
 
 /**
@@ -22,13 +24,13 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
         "hwid" : new properties.StringProperty(),
         "name" : new properties.StringProperty(),
         "batteryLevel" : new properties.IntegerProperty(),
-        "isActive": new properties.BoolProperty()
+        "lastActivity": new properties.DateProperty()
     })
 
     public hwid : string;
     public name : string;
     public batteryLevel : number
-    public isActive : boolean
+    public lastActivity : Date
 
     public constructor(private db : monk.Monk, device? : DeviceModel) 
     {
@@ -82,4 +84,29 @@ export class Device extends ModelBase<DeviceModel> implements DeviceModel {
             {hwid: "2", name: "TRUC2"}
         ])
     }
+
+    /* ---------------------------------------------------------------------------------
+     * CALLBACKS
+     * -------------------------------------------------------------------------------*/
+
+    /**
+     * Called after the item is created.
+     */
+    protected afterCreate() : boolean {
+        return true
+    }
+    /**
+     * Called after the item is updated.
+     */
+    protected afterUpdate() : boolean {
+        return true
+    }
+
+    /**
+     * Called after the item is deleted.
+     */
+    protected afterDelete() : boolean {
+        return true
+    }
+
 }

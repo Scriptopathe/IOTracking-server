@@ -8,6 +8,10 @@ import { Race,
 
 let router = express.Router()
 
+/**
+ * This controler is used to change the buoys list associated to 
+ * a given race.
+ */
 router.put("/:regata/:race", function(req, res, next) {
     var db : monk.Monk = req["db"]
     let obj = JSON.parse(req.body)

@@ -59,5 +59,5 @@ while(True):
 
     client.publish("application/dijqiodjiosq", payload)
     client.loop(100)
-    time.sleep(0.05)
+    time.sleep(0.10)
     print "Sent message with data : ", x, y, dev

@@ -1,24 +1,25 @@
-import * as express from "express"
-import * as path from "path"
-import * as exampleCtrl from "./controllers/example"
-import * as middleware404 from "./middlewares/error-404"
-import * as middlewareDB from './middlewares/database'
-import * as bodyparser from "body-parser"
-import * as rawrestapi from "./controllers/raw-rest-api"
-import * as dbfiller from "./controllers/db-filler"
-import * as serverstate from "./controllers/live-state"
-import * as buoyControler from "./controllers/buoy-controler"
-import * as uploadControler from "./controllers/upload-controler"
-import * as monk                        from "monk"
-import * as jwt                         from "jsonwebtoken"
-import * as passport                    from "passport"
-import * as config                      from './config'
-import * as authcontroler               from './controllers/auth-controler'
-import { ExtractJwt, Strategy }         from 'passport-jwt'
-import { db }                           from './middlewares/database'
-import { User, UserModel }              from './models/user'
-
-import { MQTTServer }   from "./mqtt/mqtt-server"
+import * as express                             from "express"
+import * as path                                from "path"
+import * as exampleCtrl                         from "./controllers/example"
+import * as middleware404                       from "./middlewares/error-404"
+import * as middlewareDB                        from './middlewares/database'
+import * as bodyparser                          from "body-parser"
+import * as rawrestapi                          from "./controllers/raw-rest-api"
+import * as dbfiller                            from "./controllers/db-filler"
+import * as serverstate                         from "./controllers/live-state"
+import * as buoyControler                       from "./controllers/buoy-controler"
+import * as uploadControler                     from "./controllers/upload-controler"
+import * as csvControler                        from "./controllers/csv-import-controler"
+import * as appEUIControler                     from "./controllers/appEUI-controler"
+import * as monk                                from "monk"
+import * as jwt                                 from "jsonwebtoken"
+import * as passport                            from "passport"
+import * as config                              from './config'
+import * as authcontroler                       from './controllers/auth-controler'
+import { ExtractJwt, Strategy }                 from 'passport-jwt'
+import { db }                                   from './middlewares/database'
+import { User, UserModel }                      from './models/user'
+import { MQTTServer }                           from "./mqtt/mqtt-server"
 require('ts-node/register')
 
 
@@ -82,6 +83,8 @@ export class Server {
         this.app.use('/api/state', serverstate.router)
         this.app.use("/api/buoys", buoyControler.router)
         this.app.use('/api', rawrestapi.router)
+        this.app.use("/api/import-csv", csvControler.router)
+        this.app.use('/api/appEUI', appEUIControler.router)
         this.app.use(middleware404.router)
     }
 
