@@ -11,28 +11,30 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SCRIPTS=${DIR}/scripts
-RUN_SCRIPT=${SCRIPTS}/run.sh
-INIT_SCRIPT=${SCRIPTS}/iot-tracking.sh
-TEMP_SCRIPT=${SCRIPTS}/iot-tracking.temp.sh
-DEST_SCRIPT=/etc/init.d/iot-tracking
+function safe_exec {
+    "$@"
+    local status=$?
+    if [ $status -ne 0 ]; then
+        echo "error with $1" >&2$
+        exit 1
+    fi
+    return $status
+}
 
 echo "SETUP ENVIRONMENT"
 chmod u+x scripts/iot-tracking.sh
 chmod u+x scripts/setup-env.sh
-bash scripts/setup-env.sh
+safe_exec bash scripts/setup-env.sh
 
 echo "SETUP CONFIG"
 chmod u+x scripts/setup-config.py
-python scripts/setup-config.py
+safe_exec python scripts/setup-config.py
 
 echo "SETUP NPM"
-npm install
+safe_exec npm install
+
+echo "COMPILE"
+safe_exec tsc -p server.js
 
 echo "INSTALL"
-cp $INIT_SCRIPT $TEMP_SCRIPT
-sed -i -e "s#@path@#${RUN_SCRIPT}#g" $TEMP_SCRIPT
-mv $TEMP_SCRIPT $DEST_SCRIPT
-chmod u+x $DEST_SCRIPT
-update-rc.d iot-tracking defaults
+safe_exec bash scripts/install-service.sh
