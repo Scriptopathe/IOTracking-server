@@ -85,7 +85,17 @@ export class Server {
         this.app.use('/api', rawrestapi.router)
         this.app.use("/api/import-csv", csvControler.router)
         this.app.use('/api/appEUI', appEUIControler.router)
-        this.app.use(middleware404.router)
+        this.app.use('/api', middleware404.router)
+
+        // HTTP server
+        this.app.use('', express.static('site/IoTracking-Client/dist', {
+            index: 'index.html'
+        }))
+
+        // Catch all other routes and return the index file
+        this.app.get('*', (req, res) => {
+            res.sendFile(__dirname + '/site/IoTracking-Client/dist/index.html');
+        });
     }
 
 
