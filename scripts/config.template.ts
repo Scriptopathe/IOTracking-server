@@ -15,8 +15,14 @@ export var listenPort = "$port$"
  * Example : mqtt://127.0.0.1 
  * */
 export var loraMqttBrokerUrl = "$mqtt$"
+export var loraServerUrl     = "$loraserver$"
 
 /**
  * Topic to subscribe to.
  */
-export var loraTopic = "gateway/#"
+export var loraTopic = "application/#"
+
+/**
+ * APP EUI
+ */
+export var appEUI = "8932898392893829"

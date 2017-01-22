@@ -7,7 +7,7 @@ print "Generating config.ts..."
 
 templatePath = "scripts/config.template.ts"
 configPath = "config.ts"
-
+loraserver = "https://127.0.0.1:8080"
 mqtt = "mqtt://127.0.0.1"
 prodPort = 3001
 
@@ -22,6 +22,7 @@ templateFile.close()
 value = template.replace("$secret$",  secret.replace("\"", "\\\""))
 value = value.replace("$port$",  str(prodPort))
 value = value.replace("$mqtt$",  mqtt)
+value = value.replace("$loraserver$", loraserver)
 
 configFIle = open(configPath, "w+")
 configFIle.write(value)

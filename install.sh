@@ -19,7 +19,7 @@ TEMP_SCRIPT=${SCRIPTS}/iot-tracking.temp.sh
 DEST_SCRIPT=/etc/init.d/iot-tracking
 
 echo "SETUP ENVIRONMENT"
-cripts/setup-env.sh
+scripts/setup-env.sh
 echo "SETUP CONFIG"
 python scripts/setup-config.py
 
