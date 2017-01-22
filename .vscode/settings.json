@@ -3,7 +3,9 @@
     "files.exclude": {
         "**/*.js": {"when": "$(basename).ts"},
         "**/*.js.map" : true,
-        "db/" : true
+        "db/" : true,
+        ".gitignore" : true,
+        ".gitmodules" : true
     },
     "python.linting.enabled": false
 }
