@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script makes the following things
 #       - install system packages (setup environment)
