@@ -23,7 +23,7 @@ chmod u+x scripts/setup-env.sh
 bash scripts/setup-env.sh
 
 echo "SETUP CONFIG"
-chmod scripts/setup-config.py
+chmod u+x scripts/setup-config.py
 python scripts/setup-config.py
 
 echo "SETUP NPM"
