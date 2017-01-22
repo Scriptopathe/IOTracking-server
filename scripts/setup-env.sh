@@ -4,6 +4,7 @@
 apt-get install node
 apt-get install mongodb
 apt-get install nodejs
+apt-get install python
 
 npm install -g typescript
 npm install -g tsd

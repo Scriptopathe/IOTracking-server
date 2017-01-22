@@ -19,15 +19,17 @@ TEMP_SCRIPT=${SCRIPTS}/iot-tracking.temp.sh
 DEST_SCRIPT=/etc/init.d/iot-tracking
 
 echo "SETUP ENVIRONMENT"
-scripts/setup-env.sh
+chmod u+x scripts/setup-env.sh
+bash scripts/setup-env.sh
+
 echo "SETUP CONFIG"
+chmod scripts/setup-config.py
 python scripts/setup-config.py
 
 echo "SETUP NPM"
 npm install
 
 echo "INSTALL"
-
 cp $INIT_SCRIPT $TEMP_SCRIPT
 sed -i -e "s#@path@#${RUN_SCRIPT}#g" $TEMP_SCRIPT
 mv $TEMP_SCRIPT $DEST_SCRIPT
