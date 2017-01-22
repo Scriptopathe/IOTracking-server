@@ -93,6 +93,7 @@ export class Server {
         this.configure()
         this.mqttServer.start()
         this.app.listen(config.listenPort)
+        console.log("Listening on port :" + config.listenPort)
     }
 }
 

@@ -148,7 +148,13 @@ export class MQTTServer
       var message = messageBuffer.toString()
       console.log("topic: " + topic + " | " + message)
       
-      var lulz = JSON.parse(message)
+      try {
+        var lulz = JSON.parse(message)
+      } catch(e) {
+        console.error("[MQTT Client] Bad message format : not a JSON file.")
+        return
+      }
+      // DEBUG
       if(lulz.data) {
         // to, from, id, flag == tx header
         self.printBytes(lulz.data)
