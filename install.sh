@@ -19,6 +19,7 @@ TEMP_SCRIPT=${SCRIPTS}/iot-tracking.temp.sh
 DEST_SCRIPT=/etc/init.d/iot-tracking
 
 echo "SETUP ENVIRONMENT"
+chmod u+x scripts/iot-tracking.sh
 chmod u+x scripts/setup-env.sh
 bash scripts/setup-env.sh
 
@@ -33,4 +34,5 @@ echo "INSTALL"
 cp $INIT_SCRIPT $TEMP_SCRIPT
 sed -i -e "s#@path@#${RUN_SCRIPT}#g" $TEMP_SCRIPT
 mv $TEMP_SCRIPT $DEST_SCRIPT
+chmod u+x $DEST_SCRIPT
 update-rc.d iot-tracking defaults
