@@ -36,5 +36,10 @@ safe_exec npm install
 echo "COMPILE"
 safe_exec tsc -p tsconfig.json
 
-echo "INSTALL"
+echo "INSTALL SERVICE"
+chmod u+x scripts/install-service.sh
 safe_exec bash scripts/install-service.sh
+
+echo "INSTALL CLIENT"
+chmod u+x scripts/install-client.sh
+safe_exec bash scripts/install-client.sh
