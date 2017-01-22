@@ -11,13 +11,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SCRIPTS=${DIR}/scripts
-RUN_SCRIPT=${SCRIPTS}/run.sh
-INIT_SCRIPT=${SCRIPTS}/iot-tracking.sh
-TEMP_SCRIPT=${SCRIPTS}/iot-tracking.temp.sh
-DEST_SCRIPT=/etc/init.d/iot-tracking
-
 echo "SETUP ENVIRONMENT"
 chmod u+x scripts/setup-env.sh
 bash scripts/setup-env.sh
@@ -29,8 +22,8 @@ python scripts/setup-config.py
 echo "SETUP NPM"
 npm install
 
+echo "COMPILE"
+tsc -p server.js
+
 echo "INSTALL"
-cp $INIT_SCRIPT $TEMP_SCRIPT
-sed -i -e "s#@path@#${RUN_SCRIPT}#g" $TEMP_SCRIPT
-mv $TEMP_SCRIPT $DEST_SCRIPT
-update-rc.d iot-tracking defaults
+bash scripts/install-service.sh
