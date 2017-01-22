@@ -3,6 +3,6 @@ node_modules/
 db/
 .vscode/
 public/uploads
-
+config.ts
 **.js
 **.map
