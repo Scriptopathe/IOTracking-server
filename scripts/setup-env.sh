@@ -2,7 +2,7 @@
 # Run as sudo
 
 echo "Installing node, mongodb, python"
-apt-get install npm nodejs mongodb python -y
+apt-get install npm nodejs nodejs-legacy mongodb python -y
 
 echo "Installing node packages"
 npm install -g typescript

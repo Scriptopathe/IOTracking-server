@@ -24,6 +24,7 @@
     "q": "^1.4.1",
     "reflect-metadata": "^0.1.9",
     "ts-node": "^2.0.0",
+    "typescript": "^2.1.5",
     "uuid": "^3.0.1"
   },
   "scripts": {
