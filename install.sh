@@ -34,7 +34,7 @@ echo "SETUP NPM"
 safe_exec npm install
 
 echo "COMPILE"
-safe_exec tsc -p server.js
+safe_exec tsc -p tsconfig.json
 
 echo "INSTALL"
 safe_exec bash scripts/install-service.sh
