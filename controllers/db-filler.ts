@@ -108,15 +108,19 @@ function createUsers(db : monk.Monk) : User[] {
     return users
 }
 
-function createBuoys(db : monk.Monk) : Point[][] {
+function createBuoys(db : monk.Monk, racemap : RaceMap) : Point[][] {
     // Buoys for each race
     let buoys : Point[][] = []
+    let latLen = Math.abs(racemap.northLatReference - racemap.southLatReference)
+    let longLen = Math.abs(racemap.eastLongReference - racemap.westLongReference)
+    let latMin = racemap.southLatReference
+    let longMin = racemap.westLongReference
     for(let i = 0; i < raceCount; i++) {
         let b : Point[] = []
         for(let buoy = 0; buoy < buoysCount; buoy++) {
             b.push({
-                x: Math.floor(Math.random() * bounds),
-                y: Math.floor(Math.random() * bounds),
+                x: longMin + Math.random() * longLen,         //Math.floor(Math.random() * bounds),
+                y: latMin + Math.random() *latLen             //Math.floor(Math.random() * bounds),
             })
         }
         buoys.push(b)
@@ -244,9 +248,9 @@ router.get("/", function(req, res, next) {
     setTimeout(function() {
         let devices = createDevices(db)
         let users = createUsers(db)
-        let buoys = createBuoys(db)
         let raceMaps = createRaceMaps(db)
-
+        let buoys = createBuoys(db, raceMaps[0])
+        
         setTimeout(function() {
             let raceData = createRaceData(db, devices, buoys)
             setTimeout(function() {
