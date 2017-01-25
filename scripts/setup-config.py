@@ -1,27 +1,22 @@
 import sys
 import io
 import uuid
+import config_parser
+
+
+DIR = os.path.dirname(os.path.realpath(__file__)) + "/../"
 
 print "---- setup-config.py"
 print "Generating config.ts..."
 
-templatePath = "scripts/config.template.ts"
-configPath = "config.ts"
+templatePath = DIR+"scripts/config.template.ts"
+configPath = DIR+"config.ts"
 
-configs = {
-    # loraserver, mqtt, port
-    "production" : ["https://127.0.0.1:8080", "mqtt://127.0.0.1:11883", 3001],
-    "test" : ["https://127.0.0.1:8080", "mqtt://127.0.0.1", 3001]
-}
+config = config_parser.parse_config()
 
-loraserver, mqtt, prodPort = configs["production"]
-
-# Choose configuration
-if len(sys.argv) > 1 and (sys.argv[1] in configs):
-    loraserver, mqtt, prodPort = configs[sys.argv[1]] 
-    print "* Use configuration : " + sys.argv[1]
-else:
-    print "* Use configuration : production"
+prodPort = config["LISTEN_PORT"]
+mqtt = config["LORA_BROKER"]
+loraserver = config["LORA_API"]
 
 print "* LoRaWAN mqtt server   : " + mqtt
 print "* Server port           : " + str(prodPort)

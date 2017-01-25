@@ -44,6 +44,7 @@ export function restify(Type : Restifiable)
             res.statusCode = 400
             res.statusMessage = "Bad object format. Error : " + e
             res.end()
+            return
         }
 
         newobj.save((model : any) => {

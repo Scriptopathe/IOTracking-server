@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Installs the server in systemd.
+# This will make the server start on machine startup, and being
+# re-started on error.
+
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
