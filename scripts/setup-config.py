@@ -2,6 +2,7 @@ import sys
 import io
 import uuid
 import config_parser
+import os
 
 
 DIR = os.path.dirname(os.path.realpath(__file__)) + "/../"

@@ -44,14 +44,8 @@ sudo ./install.sh
 sudo ./update.sh
 ```
 
-# Mise à jour de la conf serveur
+# A faire après une mise à jour de CONFIG.ini
 Après modification de CONFIG.ini, lancer
 ```
-python scripts/setup-config.py
-```
-
-# Mise à jour de la conf client
-Après modification de CONFIG.ini, lancer
-```
-scripts/update-client.sh
+scripts/update-config-ini.sh
 ```
