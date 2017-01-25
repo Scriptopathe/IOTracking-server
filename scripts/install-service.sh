@@ -10,6 +10,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 SCRIPTS=${DIR}
 RUN_SCRIPT=/usr/bin/node
 RUN_ARGS=${DIR}/../server.js

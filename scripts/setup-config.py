@@ -15,6 +15,9 @@ configPath = DIR+"config.ts"
 
 config = config_parser.parse_config()
 
+if config == None:
+    sys.exit(1)
+
 prodPort = config["LISTEN_PORT"]
 mqtt = config["LORA_BROKER"]
 loraserver = config["LORA_API"]

@@ -10,15 +10,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-function safe_exec {
-    "$@"
-    local status=$?
-    if [ $status -ne 0 ]; then
-        echo "error with $1" >&2$
-        exit 1
-    fi
-    return $status
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${DIR}/safe_exec.sh
 
 echo "SETUP CONFIG"
 chmod u+x scripts/setup-config.py

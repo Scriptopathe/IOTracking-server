@@ -11,15 +11,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-function safe_exec {
-    "$@"
-    local status=$?
-    if [ $status -ne 0 ]; then
-        echo "error with $1" >&2$
-        exit 1
-    fi
-    return $status
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${DIR}/scripts/safe_exec.sh
 
 echo "SETUP ENVIRONMENT"
 chmod u+x scripts/iot-tracking.sh
