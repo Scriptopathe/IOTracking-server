@@ -343,17 +343,16 @@ export class DateProperty extends Property {
         if(obj == undefined)
             return new Date().getTime()
         
+        let date = new Date(obj)
         let timestamp = parseInt(obj)
-        if(!isNaN(timestamp)) {
+        if(!isNaN(date.getTime())) {
+            return date.getTime()
+        } else if(!isNaN(timestamp)) {
             return timestamp
         } else if(obj instanceof(Date)) {
             return obj.getTime()
         } else {
-            let date = new Date(obj)
-            if (isNaN(date.getTime()))
-                return this.error("Incorrect date value '" + date + "'")
-                
-            return date.getTime()
+            return this.error("Incorrect date value '" + date + "'")
         }
     }
 

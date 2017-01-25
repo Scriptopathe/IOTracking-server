@@ -15,9 +15,6 @@ router.post("", fileUpload(), function(req, res) {
     
     let filename : string = req['body']['filename']
     let sampleFile : any = req['files']['file']
-
-    console.log("Sample file: " + sampleFile)
-    console.log("filename : " + filename)
     
     sampleFile.mv('public/uploads/racemaps/' + filename, function(err : any) {
         if (err) {

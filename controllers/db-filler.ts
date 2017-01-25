@@ -14,10 +14,10 @@ import { Point, TimePoint } from '../models/schema/property'
 import * as uuid from 'uuid'
 
 let router = express.Router()
-let raceCount = 100
-let regattaCount = 20
+let raceCount = 10
+let regattaCount = 5
 let racesPerRegatta = raceCount / regattaCount
-let devicesCount = 20
+let devicesCount = 5
 let bounds = 1024
 let buoysCount = 6
 
@@ -154,7 +154,7 @@ function createRaceMaps(db : monk.Monk) : RaceMap[] {
     let raceMaps : RaceMap[] = []
     // Race maps
     let map = new RaceMap(db, {
-        name: "Map 01",
+        name: "Lac Montbel",
         eastLongReference: 1.985608,
         westLongReference: 1.926195,
         northLatReference: 42.9945049 ,
@@ -163,6 +163,7 @@ function createRaceMaps(db : monk.Monk) : RaceMap[] {
     })
     map.saveAndCheck()
     raceMaps.push(map)
+    
     console.log("Race maps created.")
     return raceMaps
 }

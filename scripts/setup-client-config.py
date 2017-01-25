@@ -1,4 +1,6 @@
 import sys
+#!/usr/bin/python
+
 import io
 import uuid
 import os

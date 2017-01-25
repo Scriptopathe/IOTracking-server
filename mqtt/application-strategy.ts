@@ -23,7 +23,6 @@ export class ApplicationParsingStrategy implements ParsingStrategy {
     var byteNumbers = new Array(decoded.length);
     for (var i = 0; i < decoded.length; i++) {
       byteNumbers[i] = decoded.readUInt8(i)
-      console.log("byte[" + i + "] = " + byteNumbers[i])
       number |= byteNumbers[i] << (8 * i)
     }
 

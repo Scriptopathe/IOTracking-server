@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 import io
 import uuid
@@ -32,8 +33,8 @@ templateFile.close()
 
 value = template.replace("$secret$",  secret.replace("\"", "\\\""))
 value = value.replace("$port$",  str(prodPort))
-value = value.replace("$mqtt$",  mqtt)
-value = value.replace("$loraserver$", loraserver)
+value = value.replace("$mqtt$",  "mqtt://" + mqtt)
+value = value.replace("$loraserver$", "http://" + loraserver)
 
 configFIle = open(configPath, "w+")
 configFIle.write(value)
