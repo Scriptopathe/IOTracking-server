@@ -17,8 +17,7 @@ sudo scripts/update-client.sh
 
 ## Initialisation du repos
 ```
-$ npm install
-$ tsd install
+npm install
 ```
 
 ## Démarrage
@@ -38,7 +37,21 @@ Exécuter :
 sudo ./install.sh
 ```
 
-## Mise à jour
+# Mises à jour 
+
+## Mise à jour totale (avec maj git)
 ```
 sudo ./update.sh
+```
+
+# Mise à jour de la conf serveur
+Après modification de CONFIG.ini, lancer
+```
+python scripts/setup-config.py
+```
+
+# Mise à jour de la conf client
+Après modification de CONFIG.ini, lancer
+```
+scripts/update-client.sh
 ```
