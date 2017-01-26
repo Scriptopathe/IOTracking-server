@@ -36,7 +36,7 @@ def makePayload(devId, time, x, y, batteryLevel):
 devices = getDevices()
 
 client = mqtt.Client()
-client.connect("localhost")
+client.connect("192.168.43.231")
 trajs = [{"x" : 500, "y" : 500} for i in range(0, len(devices))]
 dev = 0
 while(True):
